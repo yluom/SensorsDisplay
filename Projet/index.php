@@ -1,9 +1,12 @@
+<!-- Initialisation des variables PHP -->
 <?php
+	//Colore l'onglet actif
 	$dashboard = "";
 	$charts = "";
 	$form = "";
 	$import = "";
 	if(!empty($_GET['p'])){
+		//Selon l'onglet courant
 		switch($_GET['p']){
 			case 'dashboard' :	$dashboard = "active";
 				break;
@@ -14,6 +17,8 @@
 			case 'import' :  	$import = "active";
 				break;
 		}
+	} else {
+		$dashboard = "active";
 	}
 ?>
 
@@ -34,14 +39,20 @@
     <link href="css/sb-admin.css" rel="stylesheet">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <!-- Page Specific CSS -->
-    <link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.4.3.min.css">
+    <link rel="stylesheet" href="css/morris-0.4.3.min.css">
 	
+	<!-- Importation des fichiers JavaScript pour le Bubble Chart-->
 	<script src="amcharts/amcharts.js" type="text/javascript"></script>
     <script src="amcharts/xy.js" type="text/javascript"></script>
+	<script src="amcharts/exporting/amexport.js" type="text/javascript"></script>
+	<script src="amcharts/exporting/rgbcolor.js" type="text/javascript"></script>
+	<script src="amcharts/exporting/canvg.js" type="text/javascript"></script>        
+	<script src="amcharts/exporting/filesaver.js" type="text/javascript"></script>
 	
+	<!-- Configuration du BubbleC Chart -->
 	<script type="text/javascript">
             var chart;
-
+			
             var chartData = [
                 {
                     "y": 10,
@@ -100,11 +111,52 @@
                     "value2": 16
                 }
             ];
+			
+			exportConfig = {
+				menuTop: 'auto',
+				menuLeft: 'auto',
+				menuRight: '30px',
+				menuBottom: '30px',
+				menuItems: [{
+					textAlign: 'center',
+					onclick: function () {},
+					icon: '../amcharts/images/export.png',
+					iconTitle: 'Save chart as an image',
+					items: [{
+						title: 'JPG',
+						format: 'jpg'
+					}, {
+						title: 'PNG',
+						format: 'png'
+					}, {
+						title: 'SVG',
+						format: 'svg'
+					}]
+				}],
+				menuItemStyle: {
+					backgroundColor: 'transparent',
+					rollOverBackgroundColor: '#EFEFEF',
+					color: '#000000',
+					rollOverColor: '#CC0000',
+					paddingTop: '6px',
+					paddingRight: '6px',
+					paddingBottom: '6px',
+					paddingLeft: '6px',
+					marginTop: '0px',
+					marginRight: '0px',
+					marginBottom: '0px',
+					marginLeft: '0px',
+					textAlign: 'left',
+					textDecoration: 'none'
+				}
+			}
+			
+			
             
             AmCharts.ready(function () {
                 // XY Chart
                 chart = new AmCharts.AmXYChart();
-                chart.pathToImages = "../amcharts/images/";
+                chart.pathToImages = "amcharts/images/";
                 chart.dataProvider = chartData;
                 chart.startDuration = 1.5;
             
@@ -154,81 +206,82 @@
                 var chartScrollbar = new AmCharts.ChartScrollbar();
                 chart.addChartScrollbar(chartScrollbar);
             
+				chart.exportConfig = {}; 
+			
                 // WRITE                                                
                 chart.write("chartdiv");
             });
         </script>
 	
 	
-  </head>
+</head>
 
-  <body>
+<body>
 
-    <div id="wrapper">
+	<div id="wrapper">
 
-      <!-- Sidebar -->
-      <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="index.html">SensorsDisplay</a>
-        </div>
+		<!-- Sidebar -->
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="index.html">SensorsDisplay</a>
+			</div>
 
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse navbar-ex1-collapse">
-          <ul class="nav navbar-nav side-nav">
-            <li class="<?php echo $dashboard; ?>"><a href="index.php?p=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-            <li class="<?php echo $charts; ?>"><a href="index.php?p=charts"><i class="fa fa-bar-chart-o"></i> Charts</a></li>
-            <li class="<?php echo $form; ?>"><a href="index.php?p=form"><i class="fa fa-edit"></i> Forms</a></li>
-            <li class="<?php echo $import; ?>"><a href="index.php?p=import"><i class="fa fa-file"></i> Import File</a></li>
-          </ul>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse navbar-ex1-collapse">
+				<ul class="nav navbar-nav side-nav">
+					<li class="<?php echo $dashboard; ?>"><a href="index.php?p=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+					<li class="<?php echo $charts; ?>"><a href="index.php?p=charts"><i class="fa fa-bar-chart-o"></i> Charts</a></li>
+					<li class="<?php echo $form; ?>"><a href="index.php?p=form"><i class="fa fa-edit"></i> Forms</a></li>
+					<li class="<?php echo $import; ?>"><a href="index.php?p=import"><i class="fa fa-file"></i> Import File</a></li>
+				</ul>
 
-          <ul class="nav navbar-nav navbar-right navbar-user">
-            <li class="dropdown user-dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Clement Edouard <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="#"><i class="fa fa-user"></i> Profile</a></li>
-                <li><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
-                <li class="divider"></li>
-                <li><a href="#"><i class="fa fa-power-off"></i> Log Out</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div><!-- /.navbar-collapse -->
-      </nav>
-
-      <div id="page-wrapper">
-		<?php
-			if(!empty($_GET['p'])){
-				if(file_exists('include/' . $_GET['p'] . '.php')){
-					include('include/' . $_GET['p'] . '.php');
+				<ul class="nav navbar-nav navbar-right navbar-user">
+					<li class="dropdown user-dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Clement Edouard <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"><i class="fa fa-user"></i> Profile</a></li>
+							<li><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
+							<li class="divider"></li>
+							<li><a href="#"><i class="fa fa-power-off"></i> Log Out</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div><!-- /.navbar-collapse -->
+		</nav>
+		
+		<!-- CONTENU DE LA PAGE CENTRALE -->
+		<div id="page-wrapper">
+			<?php
+				if(!empty($_GET['p'])){
+					if(file_exists('include/' . $_GET['p'] . '.php')){
+							include('include/' . $_GET['p'] . '.php');
+					} else {
+							include('include/dashboard.php');
+					}
 				} else {
 					include('include/dashboard.php');
 				}
-			} else {
-				include('include/dashboard.php');
-			}
-		?>
-      </div><!-- /#page-wrapper -->
+			?>
+		</div><!-- /#page-wrapper -->
 
-    </div><!-- /#wrapper -->
+	</div><!-- /#wrapper -->
 
-    <!-- JavaScript -->
-    <script src="js/jquery-1.10.2.js"></script>
-    <script src="js/bootstrap.js"></script>
+	<!-- Importation JavaScript de JQuery et Bootstrap-->
+	<script src="js/jquery-1.10.2.js"></script>
+	<script src="js/bootstrap.js"></script>
 
-    <!-- Page Specific Plugins -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-    <script src="http://cdn.oesmith.co.uk/morris-0.4.3.min.js"></script>
-    <script src="js/morris/chart-data-morris.js"></script>
-    <script src="js/tablesorter/jquery.tablesorter.js"></script>
-    <script src="js/tablesorter/tables.js"></script>
-	
-
-  </body>
+	<!-- Page Specific Plugins -->
+	<script src="js/raphael-min.js"></script>
+	<script src="js/morris-0.4.3.min.js"></script>
+	<script src="js/morris/chart-data-morris.js"></script>
+	<script src="js/tablesorter/jquery.tablesorter.js"></script>
+	<script src="js/tablesorter/tables.js"></script>
+</body>
 </html>
