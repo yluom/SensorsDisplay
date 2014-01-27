@@ -12,7 +12,9 @@
 				break;
 			case 'charts' : 	$charts = "active";
 				break;
-			case 'form' :  		$form = "active";
+			case 'editB' : 		$form = "active";
+				break;
+			case 'editC' : 		$form = "active";
 				break;
 			case 'import' :  	$import = "active";
 				break;
@@ -238,7 +240,13 @@
 				<ul class="nav navbar-nav side-nav">
 					<li class="<?php echo $dashboard; ?>"><a href="index.php?p=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
 					<li class="<?php echo $charts; ?>"><a href="index.php?p=charts"><i class="fa fa-bar-chart-o"></i> Charts</a></li>
-					<li class="<?php echo $form; ?>"><a href="index.php?p=form"><i class="fa fa-edit"></i> Forms</a></li>
+					<li class="dropdown <?php echo $form; ?>">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-edit"></i> Forms <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+						<li><a href="index.php?p=editB">Edit Batiments</a></li>
+						<li><a href="index.php?p=editC">Edit Cursors</a></li>
+						</ul>
+					</li>
 					<li class="<?php echo $import; ?>"><a href="index.php?p=import"><i class="fa fa-file"></i> Import File</a></li>
 				</ul>
 
