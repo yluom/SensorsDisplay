@@ -32,7 +32,7 @@
     <meta name="description" content="">
     <meta name="author" content="Clement Edouard - Léo Mouly">
 
-    <title>Dashboard - SensorsDisplay</title>
+    <title>Dashboard - SensorsDataDisplay</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
@@ -41,7 +41,13 @@
     <link href="css/sb-admin.css" rel="stylesheet">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <!-- Page Specific CSS -->
-    <link rel="stylesheet" href="css/morris-0.4.3.min.css">
+    <link rel="stylesheet" href="css/morris-0.4.3.min.css">	
+	
+	<!-- Importation JavaScript de JQuery et Bootstrap-->
+	<script src="js/jquery-1.10.2.js"></script>
+	<script src="js/jquery.mousewheel.min.js"></script>
+	
+	<script src="js/bootstrap.js"></script>
 	
 	<!-- Importation des fichiers JavaScript pour le Bubble Chart-->
 	<script src="amcharts/amcharts.js" type="text/javascript"></script>
@@ -50,170 +56,6 @@
 	<script src="amcharts/exporting/rgbcolor.js" type="text/javascript"></script>
 	<script src="amcharts/exporting/canvg.js" type="text/javascript"></script>        
 	<script src="amcharts/exporting/filesaver.js" type="text/javascript"></script>
-	
-	<!-- Configuration du BubbleC Chart -->
-	<script type="text/javascript">
-            var chart;
-			
-            var chartData = [
-                {
-                    "y": 10,
-                    "x": 14,
-                    "value": 59,
-                    "y2": -5,
-                    "x2": -3,
-                    "value2": 44
-                },
-                {
-                    "y": 5,
-                    "x": 3,
-                    "value": 50,
-                    "y2": -15,
-                    "x2": -8,
-                    "value2": 12
-                },
-                {
-                    "y": -10,
-                    "x": -3,
-                    "value": 19,
-                    "y2": -4,
-                    "x2": 6,
-                    "value2": 35
-                },
-                {
-                    "y": -6,
-                    "x": 5,
-                    "value": 65,
-                    "y2": -5,
-                    "x2": -6,
-                    "value2": 168
-                },
-                {
-                    "y": 15,
-                    "x": -4,
-                    "value": 92,
-                    "y2": -10,
-                    "x2": -8,
-                    "value2": 102
-                },
-                {
-                    "y": 13,
-                    "x": 1,
-                    "value": 8,
-                    "y2": -2,
-                    "x2": -3,
-                    "value2": 41
-                },
-                {
-                    "y": 1,
-                    "x": 6,
-                    "value": 35,
-                    "y2": 0,
-                    "x2": -3,
-                    "value2": 16
-                }
-            ];
-			
-			exportConfig = {
-				menuTop: 'auto',
-				menuLeft: 'auto',
-				menuRight: '30px',
-				menuBottom: '30px',
-				menuItems: [{
-					textAlign: 'center',
-					onclick: function () {},
-					icon: '../amcharts/images/export.png',
-					iconTitle: 'Save chart as an image',
-					items: [{
-						title: 'JPG',
-						format: 'jpg'
-					}, {
-						title: 'PNG',
-						format: 'png'
-					}, {
-						title: 'SVG',
-						format: 'svg'
-					}]
-				}],
-				menuItemStyle: {
-					backgroundColor: 'transparent',
-					rollOverBackgroundColor: '#EFEFEF',
-					color: '#000000',
-					rollOverColor: '#CC0000',
-					paddingTop: '6px',
-					paddingRight: '6px',
-					paddingBottom: '6px',
-					paddingLeft: '6px',
-					marginTop: '0px',
-					marginRight: '0px',
-					marginBottom: '0px',
-					marginLeft: '0px',
-					textAlign: 'left',
-					textDecoration: 'none'
-				}
-			}
-			
-			
-            
-            AmCharts.ready(function () {
-                // XY Chart
-                chart = new AmCharts.AmXYChart();
-                chart.pathToImages = "amcharts/images/";
-                chart.dataProvider = chartData;
-                chart.startDuration = 1.5;
-            
-                // AXES
-                // X
-                var xAxis = new AmCharts.ValueAxis();
-                xAxis.position = "bottom";
-                xAxis.axisAlpha = 0;
-                xAxis.minMaxMultiplayer = 1.2;
-                chart.addValueAxis(xAxis);
-            
-                // Y
-                var yAxis = new AmCharts.ValueAxis();
-                yAxis.position = "left";
-                yAxis.minMaxMultiplier = 1.2;
-                yAxis.axisAlpha = 0;
-                chart.addValueAxis(yAxis);
-            
-                // GRAPHS
-                // first graph
-                var graph = new AmCharts.AmGraph();
-                graph.valueField = "value";
-                graph.lineColor = "#b0de09";
-                graph.xField = "x";
-                graph.yField = "y";
-                graph.lineAlpha = 0;
-                graph.bullet = "bubble";
-                graph.balloonText = "x:<b>[[x]]</b> y:<b>[[y]]</b><br>value:<b>[[value]]</b>";
-                chart.addGraph(graph);
-            
-                // second graph
-                graph = new AmCharts.AmGraph();
-                graph.valueField = "value2";
-                graph.lineColor = "#fcd202";
-                graph.xField = "x2";
-                graph.yField = "y2";
-                graph.lineAlpha = 0;
-                graph.bullet = "bubble";
-                graph.balloonText = "x:<b>[[x]]</b> y:<b>[[y]]</b><br>value:<b>[[value]]</b>";
-                chart.addGraph(graph);
-            
-                // CURSOR
-                var chartCursor = new AmCharts.ChartCursor();
-                chart.addChartCursor(chartCursor);
-            
-                // SCROLLBAR
-                var chartScrollbar = new AmCharts.ChartScrollbar();
-                chart.addChartScrollbar(chartScrollbar);
-            
-				chart.exportConfig = {}; 
-			
-                // WRITE                                                
-                chart.write("chartdiv");
-            });
-        </script>
 	
 	
 </head>
@@ -232,7 +74,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="index.html">SensorsDisplay</a>
+				<a class="navbar-brand" href="index.html">SensorsDataDisplay</a>
 			</div>
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
@@ -266,6 +108,7 @@
 		
 		<!-- CONTENU DE LA PAGE CENTRALE -->
 		<div id="page-wrapper">
+		
 			<?php
 				if(!empty($_GET['p'])){
 					if(file_exists('include/' . $_GET['p'] . '.php')){
@@ -281,9 +124,7 @@
 
 	</div><!-- /#wrapper -->
 
-	<!-- Importation JavaScript de JQuery et Bootstrap-->
-	<script src="js/jquery-1.10.2.js"></script>
-	<script src="js/bootstrap.js"></script>
+	
 
 	<!-- Page Specific Plugins -->
 	<script src="js/raphael-min.js"></script>
