@@ -3,6 +3,7 @@
 <script src="../js/jquery-1.10.2.js"></script>
 <script src="../js/bootstrap.js"></script>
 
+<<<<<<< HEAD
 
 <div class="progress progress-striped active" style="width: 100%">
 	<div class="progress-bar" id="avancement" style="width: 0%"></div>
@@ -27,9 +28,49 @@
   </div>
 </div>
 
+=======
+// S'il manque des params 
+if (!isset($_POST['idpiece']))
+{
+	echo "E: Paramètre optionpiece manquant !!<br>";
+	exit;
+} else if (!isset($_FILES['data'])) {
+	echo "E: Paramètre data manquant !!<br>";
+	exit;
+} else if ($_FILES['data']['error']) {  // S'il y a eu une erreur lors du transfert du fichier
+          switch ($_FILES['data']['error']) {
+		case 1:	//UPLOAD_ERR_INI_SIZE
+			echo "E: Le fichier dépasse la limite autorisée par le serveur (fichier php.ini) !<br>";     
+			break;     
+		case 2:	//UPLOAD_ERR_FORM_SIZE
+			echo "E: Le fichier dépasse la limite autorisée dans le formulaire HTML !<br>"; 
+			break;     
+		case 3:	//UPLOAD_ERR_PARTIAL
+			echo "E: L'envoi du fichier a été interrompu pendant le transfert !<br>";     
+			break;     
+		case 4:	//UPLOAD_ERR_NO_FILE
+			echo "E: Le fichier que vous avez envoyé a une taille nulle !<br>"; 
+			break;     
+          }
+          exit;
+}
+else { // cas normal
 
 
+	// On va laisser le temps (999s) à php de turbiner son fichier
+	ini_set('max_execution_time', 999);
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 
+	// On récupère l'id de la piece ainsi que le fichier
+	$idPiece = $_POST['idpiece']; 
+	$file = $_FILES['data']['tmp_name'];
+	
+	// variables utilisées pour les stats (timing)
+	$sommeReq = 0; // somme des temps de l'execution de chaque requete
+	$nbReq = 0; // nombre de requetes executées
+
+
+<<<<<<< HEAD
 <?php
 function addError($str){
 	echo '<script>document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "' . $str . '<br>";</script>';
@@ -94,6 +135,21 @@ else { // cas normal
 		if($nbTotalLigne < 2) // Il faut au moins 2 lignes dans le fichier.txt : une pour les libellevariables et une pour les variables (au minimum)
 		{
 			addError( "E: Le fichier importé contient seulement ". $nbTotalLigne . " lignes,<br> veuillez importer un fichier qui fais minimum 2 lignes (1 ligne pour les libelles de variables, une ligne pour les valeurs des variables.");
+=======
+	if (!$fp = fopen($file,"r")) {
+		echo "E: Echec de l'ouverture du fichier";
+		exit;
+	} else // Fichier ouvert avec succès 
+	{ 
+		// on veut le nombre de lignes, donc on doit malheureusement (re-)lire tout le fichier
+		$contenu_fichier = fread( $fp, filesize( $file )); 
+		$nbTotalLigne = substr_count($contenu_fichier, "\n"); // On compte le nombre de lignes
+		$fp = fopen($file,"r"); // On réouvre le fichier (replace le curseur de lecture au debut)
+
+		if($nbTotalLigne < 2) // Il faut au moins 2 lignes dans le fichier.txt : une pour les libellevariables et une pour les variables (au minimum)
+		{
+			echo "E: Le fichier importé contient seulement ". $nbTotalLigne . " lignes,<br> veuillez importer un fichier qui fais minimum 2 lignes (1 ligne pour les libelles de variables, une ligne pour les valeurs des variables.";
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 		} else // S'il y a au moins 2 lignes, on parse le fichier
 		{ 
 			include "bdd.php"; // Connexion à la bdd
@@ -131,11 +187,19 @@ else { // cas normal
 			$cptLignesImportees = 0;
 			$cptLignesDansRequete = 0; // Compte le nombre de lignes entrées dans la bdd
 			$numLigneCourante = -1; // on commence à -1 
+<<<<<<< HEAD
 			
 			// On initialise les deux gros tableaux
 			$tabLibelleValeurs = null; // celui ci va contenir tous les libellés des variables présentes dans le fichier
 			$tabValeurs = null; // celui ci va contenir toutes les valeurs correspondant au libellés ci-dessus trouvés dans le fichier
 			
+=======
+			
+			// On initialise les deux gros tableaux
+			$tabLibelleValeurs = null; // celui ci va contenir tous les libellés des variables présentes dans le fichier
+			$tabValeurs = null; // celui ci va contenir toutes les valeurs correspondant au libellés ci-dessus trouvés dans le fichier
+			
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 			
 			// ----- Bloc parcours ligne par ligne
 			while(!feof($fp)) { // Tant qu'on n'est pas à la fin du fichier 
@@ -183,7 +247,11 @@ else { // cas normal
 							$tabIndiceColonne[$i][2] = $resultat->idCapteur;
 							$i += 1;
 						} else { // indice == FALSE
+<<<<<<< HEAD
 							addError( "E: Variable ". $resultat->libelle . " de la bdd entre n'existe pas dans le ficher.");
+=======
+							echo "E: Variable ". $resultat->libelle . " de la bdd entre n'existe pas dans le ficher.<br>";
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 						}
 					}
 					$resultats->closeCursor();
@@ -215,7 +283,11 @@ else { // cas normal
 					$dateErronee = false;
 					if ($datetime == false) // Si date_create_from_format renvoi false, ça veut dire que le format de la date n'as pas été respecté: ERREUR !
 					{ 
+<<<<<<< HEAD
 						addError('E: wrong date format at line ' . ($numLigneCourante + 1) . ' in your file :(...<br> Correct the line and import the file again !');
+=======
+						echo 'E: wrong date format at line ' . ($numLigneCourante + 1) . ' in your file :(...<br> Correct the line and import the file again !<br>';
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 						$dateErronee = true;
 					} else {
 						$dateFormat = $datetime->format('Y-m-d H:i:s');
@@ -223,8 +295,12 @@ else { // cas normal
 					
 					if( !$dateErronee && !is_null($datesMesuresEffectuees) && in_array($dateFormat, $datesMesuresEffectuees) == TRUE) 
 					{
+<<<<<<< HEAD
 						//addError( "E: la mesure a la date ". date_format($datetime, "Y-m-d H:i:s"). " existe deja dans la bdd ! (ligne non importee dans la bdd !)");
 						$cptDoublon++;
+=======
+						echo "E: la mesure a la date ". date_format($datetime, "Y-m-d H:i:s"). " existe deja dans la bdd ! (ligne non importee dans la bdd !)<br>";
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 					} else if (!$dateErronee) { // pas d'erreur sur la date & mesure inexistante dans la bdd: on rempli !
 						// ----- Bloc Remplissage de la bdd !
 						$idCapteurCourant = -10;
@@ -272,10 +348,14 @@ else { // cas normal
 					{
 						$avancement = $numLigneCourante/$nbTotalLigne*100;
 						$avancement = number_format($avancement, 2); // On garde 2 décimales 
+<<<<<<< HEAD
 						echo '
 						<script>
 							document.getElementById("avancement").style.width = "' . $avancement . '%";
 						</script>';
+=======
+						echo "$avancement %<br>";
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 						ob_flush();
 						flush();
 					} else {
@@ -285,9 +365,12 @@ else { // cas normal
 				}	
 			}
 			
+<<<<<<< HEAD
 			if($cptDoublon > 0)
 				addError( "E: Nombre de mesure non importées (doublon) : $cptDoublon");
 			
+=======
+>>>>>>> c2c9dc9e15507ba0952861b779c4fb8c4b74f78b
 			//Affichage du chrono
 			$timeendTotal=microtime(true);
 			$timeTotal=$timeendTotal-$timestartTotal;
