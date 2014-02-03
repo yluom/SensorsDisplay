@@ -6,6 +6,8 @@
 <script src="js/jquery-ui-1.10.4.custom.js"></script>
 <script src="js/jQDateRangeSlider-withRuler-min.js"></script>
 <script src="js/moment.min.js"></script>
+<script src="./amcharts/serial.js" type="text/javascript"></script>
+
 
 
 
@@ -21,9 +23,6 @@
 								"value" : 0
 				
 							}
-	   /*<?php
-			include "./include/reqChart.php";
-		?>*/
 	];
 	
 	exportConfig = {
@@ -115,14 +114,164 @@
 		chart.exportConfig = {}; 
 	
 		// WRITE                                                
-		chart.write("chartdiv");
+		//chart.write("chartdiv");
 	});
+</script>
+
+<!-- Init le line chart -->
+<script type="text/javascript">
+           var chart2;
+			var chartData = [];        
+
+           AmCharts.ready(function () {
+               // generate some random data first
+               generateChartData();
+
+               // SERIAL CHART
+               chart2 = new AmCharts.AmSerialChart();
+               chart2.pathToImages = "./amcharts/images/";
+			   chart2.dataDateFormat = "YYYY-MM-DD";
+               chart2.dataProvider = chartData;
+               chart2.categoryField = "date";
+
+               // listen for "dataUpdated" event (fired when chart is inited) and call zoomChart method when it happens
+               chart2.addListener("dataUpdated", zoomChart);
+
+               // AXES
+               // category
+               var categoryAxis = chart2.categoryAxis;
+               categoryAxis.parseDates = true; // as our data is date-based, we set parseDates to true
+               categoryAxis.minPeriod = "DD"; // our data is daily, so we set minPeriod to DD
+               categoryAxis.minorGridEnabled = true;
+               categoryAxis.axisColor = "#DADADA";
+
+               // first value axis (on the left)
+               var valueAxis1 = new AmCharts.ValueAxis();
+               valueAxis1.axisColor = "#FF6600";
+               valueAxis1.axisThickness = 2;
+               valueAxis1.gridAlpha = 0;
+               chart2.addValueAxis(valueAxis1);
+
+               // second value axis (on the right)
+               var valueAxis2 = new AmCharts.ValueAxis();
+               valueAxis2.position = "right"; // this line makes the axis to appear on the right
+               valueAxis2.axisColor = "#FCD202";
+               valueAxis2.gridAlpha = 0;
+               valueAxis2.axisThickness = 2;
+               chart2.addValueAxis(valueAxis2);
+
+               // third value axis (on the left, detached)
+               valueAxis3 = new AmCharts.ValueAxis();
+               valueAxis3.offset = 50; // this line makes the axis to appear detached from plot area
+               valueAxis3.gridAlpha = 0;
+               valueAxis3.axisColor = "#B0DE09";
+               valueAxis3.axisThickness = 2;
+               chart2.addValueAxis(valueAxis3);
+
+               // GRAPHS
+               // first graph
+               var graph1 = new AmCharts.AmGraph();
+               graph1.valueAxis = valueAxis1; // we have to indicate which value axis should be used
+               graph1.title = "red line";
+               graph1.valueField = "x";
+               graph1.bullet = "round";
+               graph1.hideBulletsCount = 30;
+               graph1.bulletBorderThickness = 1;
+               chart2.addGraph(graph1);
+
+               // second graph
+               var graph2 = new AmCharts.AmGraph();
+               graph2.valueAxis = valueAxis2; // we have to indicate which value axis should be used
+               graph2.title = "yellow line";
+               graph2.valueField = "y";
+               graph2.bullet = "square";
+               graph2.hideBulletsCount = 30;
+               graph2.bulletBorderThickness = 1;
+               chart2.addGraph(graph2);
+
+               // third graph
+               var graph3 = new AmCharts.AmGraph();
+               graph3.valueAxis = valueAxis3; // we have to indicate which value axis should be used
+               graph3.valueField = "value";
+               graph3.title = "green line";
+               graph3.bullet = "triangleUp";
+               graph3.hideBulletsCount = 30;
+               graph3.bulletBorderThickness = 1;
+               chart2.addGraph(graph3);
+
+               // CURSOR
+               var chartCursor = new AmCharts.ChartCursor();
+               chartCursor.cursorPosition = "mouse";
+               chart2.addChartCursor(chartCursor);
+
+               // SCROLLBAR
+               var chartScrollbar = new AmCharts.ChartScrollbar();
+               chart2.addChartScrollbar(chartScrollbar);
+
+               // LEGEND
+               var legend = new AmCharts.AmLegend();
+               legend.marginLeft = 110;
+               legend.useGraphSettings = true;
+               chart2.addLegend(legend);
+
+               // WRITE
+               chart2.write("graphdiv");
+           });
+
+           // generate some random data, quite different range
+           function generateChartData() {
+
+               for (var i = 0; i < 50; i++) {
+                   chartData.push(<?php include "reqLineChart.php"; ?>
+				   
+				   );
+               }
+           }
+
+           // this method is called when chart is first inited as we listen for "dataUpdated" event
+           function zoomChart() {
+               // different zoom methods can be used - zoomToIndexes, zoomToDates, zoomToCategoryValues
+               chart2.zoomToIndexes(10, 20);
+           }
+</script>
+
+
+<script>
+	function cacher(varCour){
+		switch(varCour){
+			case 1 :	$("#var2 :input").attr("disabled", true);
+						$("#var3 :input").attr("disabled", true);
+				break;
+			case 2 :	$("#var1 :input").attr("disabled", true);
+						$("#var3 :input").attr("disabled", true);
+				break;
+			case 3 :	$("#var1 :input").attr("disabled", true);
+						$("#var2 :input").attr("disabled", true);
+				break;
+		}
+	}
+	
+	function afficher(varCour){
+		switch(varCour){
+			case 1 :	$("#var2 :input").attr("disabled", false);
+						$("#var3 :input").attr("disabled", false);
+				break;
+			case 2 :	$("#var1 :input").attr("disabled", false);
+						$("#var3 :input").attr("disabled", false);
+				break;
+			case 3 :	$("#var1 :input").attr("disabled", false);
+						$("#var2 :input").attr("disabled", false);
+				break;
+		}
+	}
 </script>
 
 <!-- Recharge les data du chart en fonction du temps -->
 <script>
-function updaValues(dateDeb, dateFin)
-	{
+function updaValues(){
+		var dateDeb = $(".ui-rangeSlider-leftLabel .ui-rangeSlider-label-value").html();
+		var dateFin = $(".ui-rangeSlider-rightLabel .ui-rangeSlider-label-value").html();
+		
 		opt1capt = document.getElementById('optioncapteur1').value;
 		opt1lib = document.getElementById('optionlib1').value;
 		
@@ -162,6 +311,7 @@ function updaValues(dateDeb, dateFin)
 		document.getElementById('formPiece'+valeur).style.visibility="hidden";
 		document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 		document.getElementById('formLib'+valeur).style.visibility="hidden";
+		cacher(valeur);
 		if (str==""){
 			document.getElementById('optionpiece'+valeur).innerHTML="";
 			return;
@@ -175,17 +325,20 @@ function updaValues(dateDeb, dateFin)
 			if (xmlhttp.readyState==4 && xmlhttp.status==200){
 				document.getElementById('optionpiece'+valeur).innerHTML=xmlhttp.responseText;
 				if(xmlhttp.responseText.indexOf("option")==-1){
+					afficher(valeur);
 					document.getElementById('formPiece'+valeur).style.visibility="hidden";
 					document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
 				} else {
+					afficher(valeur);
 					piece = document.getElementById('optionpiece' + valeur).value;
 					showCapteur(piece, valeur);
 					document.getElementById('formPiece'+valeur).style.visibility="visible";
+
 				}
 			}
 		}
-		
+
 		xmlhttp.open("GET","./include/getPiece.php?batiment="+str,true);
 		xmlhttp.send();
 	}
@@ -195,8 +348,10 @@ function updaValues(dateDeb, dateFin)
 <script>
 	function showCapteur(str, valeur)
 	{
+		
 		document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 		document.getElementById('formLib'+valeur).style.visibility="hidden";
+		cacher(valeur);
 		if (str==""){
 			document.getElementById('optioncapteur'+valeur).innerHTML="";
 			return;
@@ -210,9 +365,11 @@ function updaValues(dateDeb, dateFin)
 			if (xmlhttp.readyState==4 && xmlhttp.status==200){
 				document.getElementById('optioncapteur'+valeur).innerHTML=xmlhttp.responseText;
 				if(xmlhttp.responseText.indexOf("option")==-1){
+					afficher(valeur);
 					document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
 				} else {
+					afficher(valeur);
 					capteur = document.getElementById('optioncapteur' + valeur).value;
 					showLib(capteur, valeur);
 					document.getElementById('formCapteur'+valeur).style.visibility="visible";
@@ -230,6 +387,7 @@ function updaValues(dateDeb, dateFin)
 	function showLib(str, valeur)
 	{
 		document.getElementById('formLib'+valeur).style.visibility="hidden";
+		cacher(valeur);
 		if (str==""){
 			document.getElementById('optionlib'+valeur).innerHTML="";
 			return;
@@ -243,8 +401,10 @@ function updaValues(dateDeb, dateFin)
 			if (xmlhttp.readyState==4 && xmlhttp.status==200){
 				document.getElementById('optionlib'+valeur).innerHTML=xmlhttp.responseText;
 				if(xmlhttp.responseText.indexOf("option")==-1){
+					afficher(valeur);
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
 				} else {
+					afficher(valeur);
 					document.getElementById('formLib'+valeur).style.visibility="visible";
 				}
 			}
@@ -263,51 +423,6 @@ function updaValues(dateDeb, dateFin)
 	}
 </script>
 
-<!-- Affiche le nouveau graph après validation -->
-<script>
-	function valide(){
-	
-		date = $( "#optionDate option:selected" ).text();
-	
-		opt1capt = document.getElementById('optioncapteur1').value;
-		opt1lib = document.getElementById('optionlib1').value;
-		
-		opt2capt = document.getElementById('optioncapteur2').value;
-		opt2lib = document.getElementById('optionlib2').value;
-		
-		opt3capt = document.getElementById('optioncapteur3').value;
-		opt3lib = document.getElementById('optionlib3').value;
-		
-		document.getElementById('chartdiv').innerHTML='<h2><img src="./img/loading.gif" style="margin-right:25px;"/>Please wait...</h2>';
-		if (window.XMLHttpRequest){	// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp=new XMLHttpRequest();
-		} else {	// code for IE6, IE5
-			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.onreadystatechange=function(){
-			if (xmlhttp.readyState==4 && xmlhttp.status==200){
-				if(xmlhttp.responseText==""){
-				
-				} else {
-					var chartData = JSON.parse("[" + xmlhttp.responseText + "]");
-					chart.dataProvider = chartData;
-					chart.validateData();
-					chart.write("chartdiv");
-				}
-			}
-		}
-		xmlhttp.open("GET","./include/reqChart.php?date="+date+"&idCapteur1="+opt1capt+"&idLibVal1="+opt1lib+"&idCapteur2="+opt2capt+"&idLibVal2="+opt2lib+"&idCapteur3="+opt3capt+"&idLibVal3="+opt3lib,true);
-		xmlhttp.send();
-	/*
-		if(document.getElementById('formPiece').style.visibility=="visible") {
-			var e = document.getElementById("optionpiece");
-			var strUser = e.options[e.selectedIndex].value;
-			alert(strUser);
-		} else {
-			alert("Please choose a piece");
-		}*/
-	}
-</script>
 
 <script>
 	function changeBullet(str){
@@ -345,12 +460,29 @@ function updaValues(dateDeb, dateFin)
   </div>
  </div>
  
+ <!-- BubbleChart -->
+<div class="row">
+  <div class="col-lg-12">
+	<h2>Multiple Axes Charts</h2>
+	<div class="panel panel-primary">
+	  <div class="panel-heading">
+		<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Multiple axes graph</h3>
+	  </div>
+	  <div class="panel-body">
+		<div id="graphdiv" style="width: auto; height: 600px;"></div>
+		<div id="slider"></div>
+	  </div>
+	</div>
+	
+  </div>
+ </div>
+ 
 
 <!-- Paramétrage des trois variables -->
 <div class="row">
 	<!-- Première donnée-->
 	<div class="col-lg-4">
-		<div class="panel panel-primary">
+		<div class="panel panel-primary" id="var1">
 			<div class="panel-heading">
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> First data (x)</h3>
 			</div>
@@ -392,7 +524,7 @@ function updaValues(dateDeb, dateFin)
 		</div>
 	</div>
 	<!-- Seconde donnée-->
-	<div class="col-lg-4">
+	<div class="col-lg-4" id="var2">
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Second data (y)</h3>
@@ -435,7 +567,7 @@ function updaValues(dateDeb, dateFin)
 		</div>
 	</div>
 	<!-- Troisième donnée-->
-	<div class="col-lg-4">
+	<div class="col-lg-4" id="var3">
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Third data (value)</h3>
@@ -490,7 +622,7 @@ function updaValues(dateDeb, dateFin)
 				
 				<div class="form-group">
 					<label>Selects Color</label>
-					<input class="form-control color" onchange="updaColor(this.value)">
+					<input class="form-control color" onchange="updaColor(this.value)" value="00FFFF">
 				</div>
 				<div class="form-group">
 					<label>Selects Bullet</label>
@@ -502,14 +634,14 @@ function updaValues(dateDeb, dateFin)
 						<option>triangleDown</option>
 						<option>triangleLeft</option>
 						<option>triangleRight</option>
-						<option>bubble</option>
+						<option selected="selected">bubble</option>
 						<option>diamond</option>
 						<option>xError</option>
 						<option>yError</option>
 					</select>
 				</div>
 				
-				<button class="btn btn-success" style="float: right;" onClick="valide()">Submit</button>
+				<button class="btn btn-success" style="float: right;" onClick="updaValues()">Submit</button>
 			</div>
 		</div>
 	  </div>
@@ -544,9 +676,7 @@ function updaValues(dateDeb, dateFin)
 	
 <script>
 	$("#slider").bind("valuesChanged", function(e, data){
-		var dateDeb = moment(new Date(data.values.min)).format("YYYY-MM-DD");
-		var dateFin = moment(new Date(data.values.max)).format("YYYY-MM-DD");
-		updaValues(dateDeb, dateFin);
+		updaValues();
 	});
 </script>
 	
