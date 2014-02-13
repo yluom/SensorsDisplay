@@ -27,6 +27,7 @@
 		$idLibVal3 = 25;
 	}
 	
+	
 			
 		$resultats=$connection->query("	SELECT LEFT(Tab1.date,10) as dateMesure, ROUND(AVG(Tab1.x),2) as x, ROUND(AVG(Tab2.y),2) as y, ROUND(AVG(Tab3.value),2) as value
 										FROM (	SELECT valeur as x, Mesure.date FROM valeurmesure, mesure 

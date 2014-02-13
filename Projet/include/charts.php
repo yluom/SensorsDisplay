@@ -135,7 +135,7 @@
                chart2.categoryField = "date";
 
                // listen for "dataUpdated" event (fired when chart is inited) and call zoomChart method when it happens
-               chart2.addListener("dataUpdated", zoomChart);
+               //chart2.addListener("dataUpdated", zoomChart);
 
                // AXES
                // category
@@ -172,7 +172,7 @@
                // first graph
                var graph1 = new AmCharts.AmGraph();
                graph1.valueAxis = valueAxis1; // we have to indicate which value axis should be used
-               graph1.title = "red line";
+               graph1.title = "x";
                graph1.valueField = "x";
                graph1.bullet = "round";
                graph1.hideBulletsCount = 30;
@@ -182,7 +182,7 @@
                // second graph
                var graph2 = new AmCharts.AmGraph();
                graph2.valueAxis = valueAxis2; // we have to indicate which value axis should be used
-               graph2.title = "yellow line";
+               graph2.title = "y";
                graph2.valueField = "y";
                graph2.bullet = "square";
                graph2.hideBulletsCount = 30;
@@ -193,7 +193,7 @@
                var graph3 = new AmCharts.AmGraph();
                graph3.valueAxis = valueAxis3; // we have to indicate which value axis should be used
                graph3.valueField = "value";
-               graph3.title = "green line";
+               graph3.title = "value";
                graph3.bullet = "triangleUp";
                graph3.hideBulletsCount = 30;
                graph3.bulletBorderThickness = 1;
@@ -216,16 +216,12 @@
 
                // WRITE
                chart2.write("graphdiv");
+			   
            });
 
            // generate some random data, quite different range
            function generateChartData() {
-
-               for (var i = 0; i < 50; i++) {
-                   chartData.push(<?php include "reqLineChart.php"; ?>
-				   
-				   );
-               }
+				chartData.push(<?php include "reqLineChart.php"; ?>);
            }
 
            // this method is called when chart is first inited as we listen for "dataUpdated" event
@@ -235,7 +231,7 @@
            }
 </script>
 
-
+<!-- Affiche/Cache les parametres -->
 <script>
 	function cacher(varCour){
 		switch(varCour){
@@ -292,10 +288,13 @@ function updaValues(){
 				if(xmlhttp.responseText==""){
 				
 				} else {
+					document.getElementById('graphiques').style.position = 'relative'; document.getElementById('graphiques').style.top = '0px';
+					$("#slider").resize();
 					var chartData = JSON.parse("[" + xmlhttp.responseText + "]");
 					chart.dataProvider = chartData;
 					chart.validateData();
 					chart.write("chartdiv");
+					chart2.write("graphdiv");
 				}
 			}
 		}
@@ -329,12 +328,13 @@ function updaValues(){
 					document.getElementById('formPiece'+valeur).style.visibility="hidden";
 					document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
+					showSubmit();
 				} else {
 					afficher(valeur);
 					piece = document.getElementById('optionpiece' + valeur).value;
 					showCapteur(piece, valeur);
 					document.getElementById('formPiece'+valeur).style.visibility="visible";
-
+					showSubmit();
 				}
 			}
 		}
@@ -368,11 +368,13 @@ function updaValues(){
 					afficher(valeur);
 					document.getElementById('formCapteur'+valeur).style.visibility="hidden";
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
+					showSubmit();
 				} else {
 					afficher(valeur);
 					capteur = document.getElementById('optioncapteur' + valeur).value;
 					showLib(capteur, valeur);
 					document.getElementById('formCapteur'+valeur).style.visibility="visible";
+					showSubmit();
 				}
 			}
 		}
@@ -403,9 +405,11 @@ function updaValues(){
 				if(xmlhttp.responseText.indexOf("option")==-1){
 					afficher(valeur);
 					document.getElementById('formLib'+valeur).style.visibility="hidden";
+					showSubmit();
 				} else {
 					afficher(valeur);
 					document.getElementById('formLib'+valeur).style.visibility="visible";
+					showSubmit();
 				}
 			}
 		}
@@ -425,12 +429,26 @@ function updaValues(){
 
 
 <script>
+	$('#line a').click(function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+});
 	function changeBullet(str){
 		alert(str);
 		graph.bullet = str;
 		chart.validateNow();
 	}
 </script>
+
+<script>
+	function showSubmit(){
+		if($("#optionlib1").css("visibility") == "visible" && $("#optionlib2").css("visibility") == "visible" && $("#optionlib3").css("visibility") == "visible")
+			document.getElementById('submit').style.display='';
+		else
+			document.getElementById('submit').style.display='none';
+	}
+</script>
+
 
 <!-- En tête du wrapper -->
 <div class="row">
@@ -443,8 +461,41 @@ function updaValues(){
   </div>
 </div><!-- /.row -->
 
-<!-- BubbleChart -->
-<div class="row">
+
+<!--Nav tabs -->
+<div class="row" id="graphiques" style="position:absolute; top:-2000px;">
+	<div class="col-lg-12">
+		<h2>Charts</h2>
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Your differents charts</h3>
+			</div>
+			<div class="panel-body">
+				 
+				<ul class="nav nav-tabs">
+					<li class="active"><a href="#line" data-toggle="tab" onclick="javascript: $('#slider').resize(); document.getElementById('parameters').style.display='none'; document.getElementById('rowBubble').style.position = 'absolute'; document.getElementById('rowBubble').style.left = '-2000px'; document.getElementById('rowLine').style.position = 'relative'; document.getElementById('rowLine').style.left = '0px'; chart2.write('graphdiv');">Line</a></li>
+					<li><a href="#bubble" data-toggle="tab" onclick="javascript: $('#slider').resize(); document.getElementById('parameters').style.display=''; document.getElementById('rowLine').style.position = 'absolute'; document.getElementById('rowLine').style.left = '-2000px'; document.getElementById('rowBubble').style.position = 'relative'; document.getElementById('rowBubble').style.left = '0px'; chart.write('chartdiv');">Bubble</a></li>
+				</ul>
+				
+				<div id="rowLine"><div id="graphdiv" style="width: auto; height: 200px;"></div></div>
+				
+				<div id="rowBubble" style="position: absolute; left: -2000px;"><div id="chartdiv" style="width: auto; height: 200px;"></div></div>
+				
+				<div id="slider"></div>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+<!-- BubbleChart 
+<div class="row" id="rowBubble">
   <div class="col-lg-12">
 	<h2>Flot Charts</h2>
 	<div class="panel panel-primary">
@@ -452,16 +503,14 @@ function updaValues(){
 		<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Line Graph Example with Tooltips</h3>
 	  </div>
 	  <div class="panel-body">
-		<div id="chartdiv" style="width: auto; height: 200px;"></div>
-		<div id="slider"></div>
+			
 	  </div>
 	</div>
-	
   </div>
- </div>
+ </div>-->
  
- <!-- BubbleChart -->
-<div class="row">
+ <!-- BubbleChart
+<div class="row" id="">
   <div class="col-lg-12">
 	<h2>Multiple Axes Charts</h2>
 	<div class="panel panel-primary">
@@ -469,14 +518,13 @@ function updaValues(){
 		<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Multiple axes graph</h3>
 	  </div>
 	  <div class="panel-body">
-		<div id="graphdiv" style="width: auto; height: 600px;"></div>
+		
 		<div id="slider"></div>
 	  </div>
 	</div>
-	
   </div>
- </div>
- 
+ </div> -->
+
 
 <!-- Paramétrage des trois variables -->
 <div class="row">
@@ -612,14 +660,12 @@ function updaValues(){
 </div>
 <!-- Autres paramètre (couleur, forme, ...) et BtnSubmit -->
 <div class="row">
-	  <div class="col-lg-12">
+	<div class="col-lg-8"  id="parameters" style="display:none;">
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Parameters</h3>
 			</div>
-			 <div class="panel-body">
-				
-				
+			<div class="panel-body">
 				<div class="form-group">
 					<label>Selects Color</label>
 					<input class="form-control color" onchange="updaColor(this.value)" value="00FFFF">
@@ -640,18 +686,25 @@ function updaValues(){
 						<option>yError</option>
 					</select>
 				</div>
-				
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-4" id="submit" style="display:none;">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Data</h3>
+			</div>
+			 <div class="panel-body">
+				Ici des stats et resume avant la validation
 				<button class="btn btn-success" style="float: right;" onClick="updaValues()">Submit</button>
 			</div>
 		</div>
-	  </div>
-	</div><!-- /.row -->
+	</div>
+</div><!-- /.row -->
 
 <!-- Lance le dateSlider -->	
 <script>
-	//$("#slider").dateRangeSlider();
-	
-	
 	var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
   $("#slider").dateRangeSlider({
     bounds: {min: new Date(2010, 11, 1), max: new Date(2010, 12, 31)},
@@ -678,6 +731,7 @@ function updaValues(){
 	$("#slider").bind("valuesChanged", function(e, data){
 		updaValues();
 	});
+	
 </script>
 	
 
