@@ -85,8 +85,8 @@
 					<li class="dropdown <?php echo $form; ?>">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-edit"></i> Forms <b class="caret"></b></a>
 						<ul class="dropdown-menu">
-						<li><a href="index.php?p=editB">Edit Batiments</a></li>
-						<li><a href="index.php?p=editC">Edit Cursors</a></li>
+						<li><a href="index.php?p=editB">Edit Buildings/Rooms</a></li>
+						<li><a href="index.php?p=editC">Edit Sensors</a></li>
 						</ul>
 					</li>
 					<li class="<?php echo $import; ?>"><a href="index.php?p=import"><i class="fa fa-file"></i> Import File</a></li>

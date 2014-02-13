@@ -234,6 +234,7 @@ if (!isset($_POST['idpiece']))
 						
 						$strErreur = "Error: La base de données de ne contient aucun capteurs dans la piece selectionnée : ".$nomDeLaPiece ." (idpiece= ".$idPiece.") ! Veuillez selectionner une autre piece.";
 						addError($strErreur);
+						$resNom->closeCursor();
 					} else // La piece contient des capteurs 
 					{ 
 						// On verifie que les libellés de la bdd existent bien dans le fichier
