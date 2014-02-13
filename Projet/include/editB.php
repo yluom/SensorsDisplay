@@ -30,10 +30,10 @@
 
 <div class="row">
 	<div class="col-lg-12">
-		<h1>Edit Batiment <small>Edit your batiments</small></h1>
+		<h1>Edit Buildings <small>Edit your buildings and rooms</small></h1>
 		<ol class="breadcrumb">
 			<li><a href="index.php?p=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-			<li class="active"><i class="fa fa-edit"></i> Edit batiment</li>
+			<li class="active"><i class="fa fa-edit"></i> Edit building</li>
 		</ol>
 	</div>
 </div><!-- /.row -->
@@ -42,16 +42,16 @@
 
 <div class="row">
 	<div class="col-lg-12">
-		<h2>Bordered with Striped Rows</h2>
+		<h2>Buildings list :</h2>
 		<div class="table-responsive">
 			<table class="table table-bordered table-hover table-striped tablesorter">
 				<thead>
 					<tr>
 						<th>Name <i class="fa fa-sort"></i></th>
 						<th>Adress <i class="fa fa-sort"></i></th>
-						<th>CP <i class="fa fa-sort"></i></th>
-						<th>Ville <i class="fa fa-sort"></i></th>
-						<th>Nb Pieces <i class="fa fa-sort"></i></th>
+						<th>Zip code <i class="fa fa-sort"></i></th>
+						<th>City <i class="fa fa-sort"></i></th>
+						<th>Rooms<i class="fa fa-sort"></i></th>
 						<th>Edit <i class="fa fa-sort"></i></th>
 					</tr>
 				</thead>

@@ -364,9 +364,9 @@ if (!isset($_POST['idpiece']))
 		fclose($fp); // On ferme le fichier
 	}
 }
-	if($readyForParsing)
+	if($readyForParsing) // Si le fichier à été parsé
 		echo "<script>finParser($page_load_timeTotal,$cptLignesImportees,$nbTotalLigne);</script>";
-	else 
+	else // s'il n'as pas été parsé pour quelque raison que ce soit
 		echo "<script>finParser(0,0,0);</script>";
 ?>
 
