@@ -30,7 +30,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="Clement Edouard - Léo Mouly">
+    <meta name="author" content="Clément Edouard - Léo Mouly">
 
     <title>Dashboard - SensorsDataDisplay</title>
 
@@ -74,7 +74,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="index.html">SensorsDataDisplay</a>
+				<a class="navbar-brand" href="index.php">SensorsDataDisplay</a>
 			</div>
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
