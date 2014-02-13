@@ -58,18 +58,18 @@
 		{
 			if($test){
 				echo	'	{
-								date : "' . $resultat->dateMesure .'",
-								y : ' . $resultat->y .',
-								x : ' . $resultat->x .',
-								value : ' . $resultat->value .'
+								"date" : "' . $resultat->dateMesure .'",
+								"y" : ' . $resultat->y .',
+								"x" : ' . $resultat->x .',
+								"value" : ' . $resultat->value .'
 							}';
 				$test = false;
 			} else {
 				echo	'	,{
-								date : "' . $resultat->dateMesure .'", 
-								y : ' . $resultat->y .',
-								x : ' . $resultat->x .',
-								value : ' . $resultat->value .'
+								"date" : "' . $resultat->dateMesure .'", 
+								"y" : ' . $resultat->y .',
+								"x" : ' . $resultat->x .',
+								"value" : ' . $resultat->value .'
 							}';
 			}
 		}
@@ -77,15 +77,6 @@
 		$resultats->closeCursor(); 
 	
 	
-	
-	//Avec interval
-	/*$resultats=$connection->query("	SELECT Tab1.x, Tab2.y, Tab3.value
-									FROM 	(SELECT valeur as x, Mesure.date 		FROM valeurmesure, mesure WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure AND LibVal_idLibVal = 21 AND Mesure.date BETWEEN '$dateDeb' AND '$dateFin') Tab1,
-											(SELECT valeur as y, Mesure.date 		FROM valeurmesure, mesure WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure AND LibVal_idLibVal = 10 AND Mesure.date BETWEEN '$dateDeb' AND '$dateFin') Tab2,
-											(SELECT valeur as value, Mesure.date 	FROM valeurmesure, mesure WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure AND LibVal_idLibVal = 23 AND Mesure.date BETWEEN '$dateDeb' AND '$dateFin') Tab3
-									WHERE Tab1.date = Tab2.date
-									AND Tab2.date = Tab3.date;");*/
-									
-	//Pour un jour donné						
+					
 	
 ?>

@@ -122,20 +122,16 @@
 <script type="text/javascript">
            var chart2;
 			var chartData = [];        
-
            AmCharts.ready(function () {
-               // generate some random data first
-               generateChartData();
-
                // SERIAL CHART
                chart2 = new AmCharts.AmSerialChart();
                chart2.pathToImages = "./amcharts/images/";
 			   chart2.dataDateFormat = "YYYY-MM-DD";
                chart2.dataProvider = chartData;
                chart2.categoryField = "date";
-
+			   chart2.autoMarginOffset = 20;
                // listen for "dataUpdated" event (fired when chart is inited) and call zoomChart method when it happens
-               //chart2.addListener("dataUpdated", zoomChart);
+               chart2.addListener("dataUpdated", zoomChart);
 
                // AXES
                // category
@@ -220,9 +216,9 @@
            });
 
            // generate some random data, quite different range
-           function generateChartData() {
+          /* function generateChartData() {
 				chartData.push(<?php include "reqLineChart.php"; ?>);
-           }
+           }*/
 
            // this method is called when chart is first inited as we listen for "dataUpdated" event
            function zoomChart() {
@@ -277,7 +273,10 @@ function updaValues(){
 		opt3capt = document.getElementById('optioncapteur3').value;
 		opt3lib = document.getElementById('optionlib3').value;
 		
+		
+		document.getElementById('graphiques').style.position = 'relative'; document.getElementById('graphiques').style.top = '0px';
 		document.getElementById('chartdiv').innerHTML='<h2><img src="./img/loading.gif" style="margin-right:25px;"/>Please wait...</h2>';
+		document.getElementById('graphdiv').innerHTML='<h2><img src="./img/loading.gif" style="margin-right:25px;"/>Please wait...</h2>';
 		if (window.XMLHttpRequest){	// code for IE7+, Firefox, Chrome, Opera, Safari
 			xmlhttp=new XMLHttpRequest();
 		} else {	// code for IE6, IE5
@@ -290,11 +289,24 @@ function updaValues(){
 				} else {
 					document.getElementById('graphiques').style.position = 'relative'; document.getElementById('graphiques').style.top = '0px';
 					$("#slider").resize();
-					var chartData = JSON.parse("[" + xmlhttp.responseText + "]");
+					
+					var elem = xmlhttp.responseText.split('END');
+					var dataBubble = elem[0];
+					var dataLine = elem[1];
+					
+					var chartData = JSON.parse("[" + dataBubble + "]");
 					chart.dataProvider = chartData;
 					chart.validateData();
-					chart.write("chartdiv");
-					chart2.write("graphdiv");
+					//chart.write("chartdiv");
+					
+					chartData = JSON.parse("[" + dataLine + "]"); 	
+					chart2.dataProvider = chartData;
+					chart2.validateData();
+					//chart2.write("graphdiv");
+					
+					
+					
+					
 				}
 			}
 		}
@@ -302,6 +314,7 @@ function updaValues(){
 		xmlhttp.send();
 	}
 </script>
+
 
 <!-- Charge les pieces -->
 <script>
@@ -434,9 +447,8 @@ function updaValues(){
   $(this).tab('show')
 });
 	function changeBullet(str){
-		alert(str);
-		graph.bullet = str;
-		chart.validateNow();
+	graph.bullet = str;
+	chart.validateNow();
 	}
 </script>
 
@@ -446,6 +458,55 @@ function updaValues(){
 			document.getElementById('submit').style.display='';
 		else
 			document.getElementById('submit').style.display='none';
+	}
+</script>
+
+<script>
+	function updaStats(){
+		var dateDeb = $(".ui-rangeSlider-leftLabel .ui-rangeSlider-label-value").html();
+		var dateFin = $(".ui-rangeSlider-rightLabel .ui-rangeSlider-label-value").html();
+		
+		opt1capt = document.getElementById('optioncapteur1').value;
+		opt1lib = document.getElementById('optionlib1').value;
+		
+		
+		if (window.XMLHttpRequest){	// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp=new XMLHttpRequest();
+		} else {	// code for IE6, IE5
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange=function(){
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				if(xmlhttp.responseText == ""){
+					document.getElementById('nbrData').innerHTML = '0';
+				} else {
+					document.getElementById('nbrData').innerHTML = xmlhttp.responseText;
+				}
+			}
+		}
+		xmlhttp.open("GET","./include/stats.php?dateDeb="+dateDeb+"&dateFin="+dateFin+"&idCapteur1="+opt1capt+"&idLibVal1="+opt1lib,true);
+		xmlhttp.send();
+	}
+</script>
+<script>
+	function onLine(){
+		$('#slider').resize(); 
+		document.getElementById('parameters').style.display='none'; 
+		document.getElementById('rowBubble').style.position = 'absolute'; 
+		document.getElementById('rowBubble').style.left = '-2000px'; 
+		document.getElementById('rowLine').style.position = 'relative'; 
+		document.getElementById('rowLine').style.left = '0px'; 
+		chart2.write('graphdiv');
+	}
+	
+	function onBubble(){
+		$('#slider').resize(); 
+		document.getElementById('parameters').style.display=''; 
+		document.getElementById('rowLine').style.position = 'absolute'; 
+		document.getElementById('rowLine').style.left = '-2000px'; 
+		document.getElementById('rowBubble').style.position = 'relative'; 
+		document.getElementById('rowBubble').style.left = '0px'; 
+		chart.write('chartdiv');
 	}
 </script>
 
@@ -473,58 +534,20 @@ function updaValues(){
 			<div class="panel-body">
 				 
 				<ul class="nav nav-tabs">
-					<li class="active"><a href="#line" data-toggle="tab" onclick="javascript: $('#slider').resize(); document.getElementById('parameters').style.display='none'; document.getElementById('rowBubble').style.position = 'absolute'; document.getElementById('rowBubble').style.left = '-2000px'; document.getElementById('rowLine').style.position = 'relative'; document.getElementById('rowLine').style.left = '0px'; chart2.write('graphdiv');">Line</a></li>
-					<li><a href="#bubble" data-toggle="tab" onclick="javascript: $('#slider').resize(); document.getElementById('parameters').style.display=''; document.getElementById('rowLine').style.position = 'absolute'; document.getElementById('rowLine').style.left = '-2000px'; document.getElementById('rowBubble').style.position = 'relative'; document.getElementById('rowBubble').style.left = '0px'; chart.write('chartdiv');">Bubble</a></li>
+					<li class="active"><a href="#line" data-toggle="tab" onclick="onLine();">Line</a></li>
+					<li><a href="#bubble" data-toggle="tab" onclick="onBubble();">Bubble</a></li>
 				</ul>
 				
 				<div id="rowLine"><div id="graphdiv" style="width: auto; height: 200px;"></div></div>
 				
 				<div id="rowBubble" style="position: absolute; left: -2000px;"><div id="chartdiv" style="width: auto; height: 200px;"></div></div>
 				
-				<div id="slider"></div>
+				
 				
 			</div>
 		</div>
 	</div>
 </div>
-
-
-
-
-
-
-
-<!-- BubbleChart 
-<div class="row" id="rowBubble">
-  <div class="col-lg-12">
-	<h2>Flot Charts</h2>
-	<div class="panel panel-primary">
-	  <div class="panel-heading">
-		<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Line Graph Example with Tooltips</h3>
-	  </div>
-	  <div class="panel-body">
-			
-	  </div>
-	</div>
-  </div>
- </div>-->
- 
- <!-- BubbleChart
-<div class="row" id="">
-  <div class="col-lg-12">
-	<h2>Multiple Axes Charts</h2>
-	<div class="panel panel-primary">
-	  <div class="panel-heading">
-		<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Multiple axes graph</h3>
-	  </div>
-	  <div class="panel-body">
-		
-		<div id="slider"></div>
-	  </div>
-	</div>
-  </div>
- </div> -->
-
 
 <!-- Paramétrage des trois variables -->
 <div class="row">
@@ -658,6 +681,21 @@ function updaValues(){
 		</div>
 	</div>
 </div>
+
+<div class="row">
+	<div class="col-lg-12" id="sliderDate">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Date range</h3>
+			</div>
+			<div class="panel-body">
+				<div id="slider"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
 <!-- Autres paramètre (couleur, forme, ...) et BtnSubmit -->
 <div class="row">
 	<div class="col-lg-8"  id="parameters" style="display:none;">
@@ -696,8 +734,8 @@ function updaValues(){
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Data</h3>
 			</div>
 			 <div class="panel-body">
-				Ici des stats et resume avant la validation
-				<button class="btn btn-success" style="float: right;" onClick="updaValues()">Submit</button>
+				Nombre de donnees = <b><span id="nbrData">0</span></b> <br><br><br>
+				<button class="btn btn-success" style="float: right;" onClick="updaValues(); chart2.write('graphdiv'); chart.write('chartdiv');">Submit</button>
 			</div>
 		</div>
 	</div>
@@ -729,9 +767,7 @@ function updaValues(){
 	
 <script>
 	$("#slider").bind("valuesChanged", function(e, data){
-		updaValues();
+		updaStats();
 	});
 	
 </script>
-	
-
