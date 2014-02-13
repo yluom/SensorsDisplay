@@ -19,17 +19,17 @@
 			if (xmlhttp.readyState==4 && xmlhttp.status==200){
 				document.getElementById('optionpiece').innerHTML=xmlhttp.responseText;
 				if(xmlhttp.responseText==""){
-					if(str=="Choose :"){
+					if(str == "Choose :"){
 						document.getElementById('alert').className="alert alert-info";
-						document.getElementById('alert').innerHTML="<h4>Info!</h4><p>Veuillez choisir un batiment puis selectionner une piece.</p>";
+						document.getElementById('alert').innerHTML="<h4>Info!</h4><p>Please choose a building and then select a room.</p>";
 					}else{
 						document.getElementById('alert').className="alert alert-warning";
-						document.getElementById('alert').innerHTML="<h4>Warning!</h4><p>Ce batiment ne contient aucune piece, merci d'en choisir un autre.</p>";
+						document.getElementById('alert').innerHTML="<h4>Warning!</h4><p> This building does not contains any rooms, please select another building.</p>";
 						document.getElementById('formPiece').style.visibility="hidden";
 					}
 				} else {
 					document.getElementById('alert').className="alert alert-success";
-					document.getElementById('alert').innerHTML="<h4>Success!</h4><p>Ce batiment contient des pieces, veuillez en selectionner une.</p>";
+					document.getElementById('alert').innerHTML="<h4>Success!</h4><p>This building has rooms, please select one.</p>";
 					document.getElementById('formPiece').style.visibility="visible";
 				}
 			}
@@ -44,7 +44,6 @@
 		if(document.getElementById('formPiece').style.visibility=="visible") {
 			var e = document.getElementById("optionpiece");
 			var strUser = e.options[e.selectedIndex].value;
-			alert(strUser);
 		} else {
 			alert("Please choose a piece");
 		}
@@ -53,10 +52,10 @@
 
 <div class="row">
   <div class="col-lg-12">
-	<h1>Importation <small>Import Your Data</small></h1>
+	<h1>Import File <small>Import Your Data Into SensorsDataDisplay Database</small></h1>
 	<ol class="breadcrumb">
 	  <li><a href="index.php?p=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-	  <li class="active"><i class="fa fa-edit"></i> Forms</li>
+	  <li class="active"><i class="fa fa-edit"></i> Import File</li>
 	</ol>
   </div>
 </div><!-- /.row -->
@@ -74,7 +73,7 @@
 		  
 			<div class="col-lg-6">
 					<div class="form-group">
-						<label>Selects Batiment</label>
+						<label>Select Building</label>
 						<select class="form-control" onchange="showPiece(this.value)">
 							<option>Choose :</option>
 						<?php
@@ -91,7 +90,7 @@
 					
 					<div class="alert alert-info" id="alert">
 						<h4>Info!</h4>
-						<p>Veuillez choisir un batiment puis selectionner une piece.</p>
+						<p>Please choose a building and then select a room.</p>
 					</div>
 					
 			</div>
@@ -101,7 +100,7 @@
 		</div>
 		<div class="col-lg-6">
 				<div class="form-group" id="formPiece" style="visibility: hidden;">
-					<label>Selects Piece</label>
+					<label>Select Piece</label>
 					<select class="form-control" id="optionpiece" name="idpiece">
 						<option>Choisir</option>
 					</select>
