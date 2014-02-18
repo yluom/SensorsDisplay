@@ -16,7 +16,7 @@
 										document.getElementById('errors').style.visibility = "visible";
 									}
 								}, 700);
-	}
+	}i
 </script>
 
 
@@ -89,7 +89,7 @@ $timestartTotal=microtime(true);
 ini_set('display_errors', 1); 
 error_reporting(E_ALL); 
 
-$readyForParsing = false; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
+$readyForParsing = true; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
 
 // S'il manque des params 
 if (!isset($_POST['idpiece']))
@@ -130,11 +130,11 @@ if (!isset($_POST['idpiece']))
 	$sommeReq = 0; // somme des temps de l'execution de chaque requete
 	$nbReq = 0; // nombre de requetes executées
 
-	$cptDoublon = 0;	//Compte le nombre de mesures qui existent déjà dans la BDD
+	$cptDoublon = 0;	//Compte le nombre de mesures qui existent déjà dans la BDD ( à cette date )
 
 	if (!$fp = fopen($file,"r")) {
 		addError( "Error: Echec de l'ouverture du fichier");
-		exit;
+		$readyForParsing = false;
 	} else // Fichier ouvert avec succès 
 	{ 
 		// on veut le nombre de lignes, donc on doit malheureusement (re-)lire tout le fichier
@@ -148,12 +148,12 @@ if (!isset($_POST['idpiece']))
 		} else // S'il y a au moins 2 lignes, on parse le fichier
 		{ 
 			include "bdd.php"; // Connexion à la bdd
-			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd  
+			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
 			$resultats=$connection->query("
 						SELECT date
 						FROM Mesure, Capteur, Localiser
 						WHERE Capteur.idCapteur = Localiser.Capteur_idCapteur
-						AND Localiser.Piece_idPiece = ".$idPiece."
+						AND Localiser.Piece_idPiece = ".$idPiece." 
 						GROUP BY DATE
 					");
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
@@ -201,60 +201,64 @@ if (!isset($_POST['idpiece']))
 					$tabLibelleValeurs = array_filter($tabLibelleValeurs); // Enlève les valeurs vides du tableau ('' et '0')
 					$tabLibelleValeurs = array_values($tabLibelleValeurs); // Remet à jour les clés(index) du tableau
 					//var_dump($tabLibelleValeurs); // Debug: affichage du tableau
-
 					
-					$i = 0; // On init i à 0
-
 					// On commence à construire le début nos deux grosses requetes
 					$strInsertValMesure = "INSERT INTO ValeurMesure (Mesure_idMesure, valeur, libval_idlibval) VALUES "; 
 					$strInsertMesure = "INSERT INTO Mesure(date, idMesure, capteur_idcapteur) VALUES ";
+
+					$i = 0; // On init i à 0
 					
+					foreach ($tabLibelleValeurs as &$nomCaptEtLib) { // pour chaque entete de colonne
 					
-					// Recuperation de l'association libelléVal - idLibval - idtypeCapteur pour une piece donnée
-					$resultats=$connection->query("
-									SELECT libelle, idLibVal, Capteur.idCapteur FROM Capteur, Localiser, LibVal
-									WHERE Piece_idPiece = $idPiece
-									AND Capteur.idCapteur = Localiser.Capteur_idCapteur
-									AND Capteur.TypeCapteur_idTypeCapteur = LibVal.TypeCapteur_idTypeCapteur
-									ORDER BY Capteur.idCapteur;"
-									);
-					$resultats->setFetchMode(PDO::FETCH_OBJ);
-					
-					$readyForParsing = true; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
-					
-					if ($resultats->rowCount() == 0) // Si la requete renvoi un resultat vide: pas de capteurs dans cette piece ! (et donc pas de libellés à chercher)
-					{
-						$readyForParsing = false;
+						$nomCaptEtLibArray = explode("/", $nomCaptEtLib); // On separe en 2 le nomCapteur et libelleVal
 						
-						// on va chercher le nom de la piece pour une erreur plus complete
-						$resNom=$connection->query("SELECT nom as nomPiece FROM Piece WHERE idPiece = $idPiece"); 
-						$resNom->setFetchMode(PDO::FETCH_OBJ);
-						$resultNom = $resNom->fetch();
-						$nomDeLaPiece = $resultNom->nomPiece;
+						if(count($nomCaptEtLibArray) != 2) // dafuq ? Capteur/libelle
+						{
+							addError("Warning: l'entete de colonne $nomCaptEtLib est mal formée !");
+						} else {
 						
-						$strErreur = "Error: La base de données de ne contient aucun capteurs dans la piece selectionnée : ".$nomDeLaPiece ." (idpiece= ".$idPiece.") ! Veuillez selectionner une autre piece.";
-						addError($strErreur);
-						$resNom->closeCursor();
-					} else // La piece contient des capteurs 
-					{ 
-						// On verifie que les libellés de la bdd existent bien dans le fichier
-						while( $resultat = $resultats->fetch())
-						{	
-							$indice = array_search($resultat->libelle, $tabLibelleValeurs); // Retourne d'indice si le libelle existe dans le fichier
-							if($indice !== FALSE) // Il a trouvé un indice
+							$requete2ouf = "
+									SELECT  idCapteur, idLibVal
+									FROM Capteur, LibVal, TypeCapteur
+									WHERE Capteur.TypeCapteur_idTypeCapteur = LibVal.TypeCapteur_idTypeCapteur
+									AND nomCapteur = '$nomCaptEtLibArray[0]'
+									AND libelle = '$nomCaptEtLibArray[1]';
+									";
+							//echo "<br> Req: <br> ". $requete2ouf;
+	
+							$resultats=$connection->query($requete2ouf);
+							$resultats->setFetchMode(PDO::FETCH_OBJ);
+							
+							if($resultats->rowCount() == 0)
 							{
+								addError("Warning: Dans la bdd, il n'existe aucune correspondance entre le capteur $nomCaptEtLibArray[0] et le libelle $nomCaptEtLibArray[1] !");
+							} else {
+								$resultat = $resultats->fetch();
+								$indice = array_search($nomCaptEtLib, $tabLibelleValeurs); // Retourne d'indice si le libelle existe dans le fichier
+
+								// on stoque l'association indexDansLeFichier/idLibVal/idCapteur
 								$tabIndiceColonne[$i][0] = $indice;
 								$tabIndiceColonne[$i][1] = $resultat->idLibVal;
 								$tabIndiceColonne[$i][2] = $resultat->idCapteur;
 								$i += 1;
-							} else { // indice == FALSE
-								addError( "Warning: Variable ". $resultat->libelle . " de la bdd entre n'existe pas dans le ficher !");
 							}
+							$resultats->closeCursor();
 						}
 					}
+					print "Before sorting: <pre>";
+					print_r($tabIndiceColonne);	
+					print "</pre>";
 					
-					
-					$resultats->closeCursor();
+					foreach ($tabIndiceColonne as $array) {
+						$idCapt[] = $array[2];
+					}
+
+					array_multisort($idCapt,SORT_STRING,$tabIndiceColonne);
+
+					print "After sorting: <pre>";
+					print_r($tabIndiceColonne);
+					print "</pre>";
+
 				} else { // Toutes les lignes sauf la premiere
 					if($readyForParsing) {
 						$tabValeurs = explode(' ', $ligne); // On split sur les espaces
