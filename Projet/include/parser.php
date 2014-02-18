@@ -12,7 +12,7 @@
 										if (nbErrors == 1)
 											document.getElementById('nbErrors').innerHTML = nbErrors + " Error";
 										else
-											document.getElementById('nbErrors').innerHTML = nbErrors + " Error(s)";
+											document.getElementById('nbErrors').innerHTML = nbErrors + " Errors/Warnings";
 										document.getElementById('errors').style.visibility = "visible";
 									}
 								}, 700);
@@ -79,7 +79,7 @@
 
 <?php
 
-function addError ($str)
+function addError ($str) // TODO Discerner erreurs/warnings
 {
 	echo '<script>nbErrors++;document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "<div class=\"alert alert-dismissable alert-danger\">' . $str . '</div>";</script>';
 }
@@ -245,20 +245,13 @@ if (!isset($_POST['idpiece']))
 							$resultats->closeCursor();
 						}
 					}
-					print "Before sorting: <pre>";
-					print_r($tabIndiceColonne);	
-					print "</pre>";
-					
+
+					// TRIAGE du tableau en fonction de l'idCapteur (necessaire pour minimiser les requetes d'insertion dans Mesure)
 					foreach ($tabIndiceColonne as $array) {
 						$idCapt[] = $array[2];
 					}
-
-					array_multisort($idCapt,SORT_STRING,$tabIndiceColonne);
-
-					print "After sorting: <pre>";
-					print_r($tabIndiceColonne);
-					print "</pre>";
-
+					array_multisort($idCapt,SORT_NUMERIC,$tabIndiceColonne);
+					
 				} else { // Toutes les lignes sauf la premiere
 					if($readyForParsing) {
 						$tabValeurs = explode(' ', $ligne); // On split sur les espaces
