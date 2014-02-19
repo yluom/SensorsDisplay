@@ -1,12 +1,12 @@
 <?php
 	include "bdd.php";
-	$resultats=$connection->query("	SELECT idBatiment, Batiment.nom, adresse, cp, ville, count(idPiece) as nbPiece
-														FROM Batiment, Piece 
+	$resultats=$connection->query("	SELECT idBatiment, batiment.nom, adresse, cp, ville, count(idPiece) as nbPiece
+														FROM batiment, piece 
 														WHERE Batiment_idBatiment = idBatiment
 															UNION
-														SELECT idBatiment, Batiment.nom, adresse, cp, ville, 0 FROM Batiment
+														SELECT idBatiment, batiment.nom, adresse, cp, ville, 0 FROM batiment
 														WHERE idBatiment NOT IN (	SELECT DISTINCT Batiment_idBatiment 
-																					FROM Piece
+																					FROM piece
 																				);
 														");
 	$resultats->setFetchMode(PDO::FETCH_OBJ);

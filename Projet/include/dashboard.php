@@ -1,32 +1,32 @@
 <?php
 	include 'bdd.php';
 	
-	$result=$connection->query("SELECT count(*) as nb FROM Batiment"); 
+	$result=$connection->query("SELECT count(*) as nb FROM batiment"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbBatiments = $res->nb;
 	
-	$result=$connection->query("SELECT count(*) as nb FROM Piece"); 
+	$result=$connection->query("SELECT count(*) as nb FROM piece"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbPieces = $res->nb;
 	
-	$result=$connection->query("SELECT count(*) as nbCapteurs FROM Capteur"); 
+	$result=$connection->query("SELECT count(*) as nbCapteurs FROM capteur"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbCapteurs = $res->nbCapteurs;
 	
-	$result=$connection->query("SELECT count(*) as nbMesures FROM Mesure"); 
+	$result=$connection->query("SELECT count(*) as nbMesures FROM mesure"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbMesures = $res->nbMesures;
 	
-	$result=$connection->query("SELECT count(*) as nbTypes FROM TypeCapteur"); 
+	$result=$connection->query("SELECT count(*) as nbTypes FROM typecapteur"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbTypes = $res->nbTypes;
 	
-	$result=$connection->query("SELECT count(*) as nbVal FROM ValeurMesure"); 
+	$result=$connection->query("SELECT count(*) as nbVal FROM valeurmesure"); 
 	$result->setFetchMode(PDO::FETCH_OBJ);
 	$res = $result->fetch();
 	$nbVals = $res->nbVal;

@@ -30,23 +30,23 @@
 	
 			
 		$resultats=$connection->query("	SELECT LEFT(Tab1.date,10) as dateMesure, ROUND(AVG(Tab1.x),2) as x, ROUND(AVG(Tab2.y),2) as y, ROUND(AVG(Tab3.value),2) as value
-										FROM (	SELECT valeur as x, Mesure.date FROM valeurmesure, mesure 
-												WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure 
+										FROM (	SELECT valeur as x, mesure.date FROM valeurmesure, mesure 
+												WHERE valeurmesure.Mesure_idMesure = mesure.idMesure 
 												AND Capteur_idCapteur = '$idCapteur1' 
 												AND LibVal_idLibVal = '$idLibVal1' 
-												AND Mesure.date BETWEEN '$dateDeb%' AND '$dateFin%' ) Tab1,
-										(		SELECT valeur as y, Mesure.date 
+												AND mesure.date BETWEEN '$dateDeb%' AND '$dateFin%' ) Tab1,
+										(		SELECT valeur as y, mesure.date 
 												FROM valeurmesure, mesure 
-												WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure 
+												WHERE valeurmesure.Mesure_idMesure = mesure.idMesure 
 												AND Capteur_idCapteur = '$idCapteur2' 
 												AND LibVal_idLibVal = '$idLibVal2' 
-												AND Mesure.date BETWEEN '$dateDeb%' AND '$dateFin%') Tab2, 
-										(		SELECT valeur as value, Mesure.date 
+												AND mesure.date BETWEEN '$dateDeb%' AND '$dateFin%') Tab2, 
+										(		SELECT valeur as value, mesure.date 
 												FROM valeurmesure, mesure 
-												WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure 
+												WHERE valeurmesure.Mesure_idMesure = mesure.idMesure 
 												AND Capteur_idCapteur = '$idCapteur3' 
 												AND LibVal_idLibVal = '$idLibVal3' 
-												AND Mesure.date BETWEEN '$dateDeb%' AND '$dateFin%') Tab3 
+												AND mesure.date BETWEEN '$dateDeb%' AND '$dateFin%') Tab3 
 										WHERE Tab1.date = Tab2.date 
 										AND Tab2.date = Tab3.date 
 										GROUP BY DAY(dateMesure);");

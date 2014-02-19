@@ -118,6 +118,7 @@ if (!isset($_POST['idpiece']))
 	addError("Error: Le fichier importé est au format $format. Seul le format texte est accepté !");
 } else { // cas normal
 
+	date_default_timezone_set('Europe/Paris');
 
 	// On va laisser le temps (999s) à php de turbiner son fichier
 	ini_set('max_execution_time', 999);
@@ -151,9 +152,9 @@ if (!isset($_POST['idpiece']))
 			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd  
 			$resultats=$connection->query("
 						SELECT date
-						FROM Mesure, Capteur, Localiser
-						WHERE Capteur.idCapteur = Localiser.Capteur_idCapteur
-						AND Localiser.Piece_idPiece = ".$idPiece."
+						FROM mesure, capteur, localiser
+						WHERE capteur.idCapteur = localiser.Capteur_idCapteur
+						AND localiser.Piece_idPiece = ".$idPiece."
 						GROUP BY DATE
 					");
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
@@ -168,7 +169,7 @@ if (!isset($_POST['idpiece']))
 			
 			// ----- Bloc recherche idMesureMax
 			// on va chercher l'idmesure maximal, afin de rentrer les prochaines mesures avec un bon idmesure
-			$resultats=$connection->query("SELECT max(idMesure) AS maximum FROM Mesure"); 
+			$resultats=$connection->query("SELECT max(idMesure) AS maximum FROM mesure"); 
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
 			$result = $resultats->fetch();
 			$idMesureCourant = $result->maximum; // On recupère le maximum, qui nous servira à remplir la table Mesure
@@ -206,17 +207,17 @@ if (!isset($_POST['idpiece']))
 					$i = 0; // On init i à 0
 
 					// On commence à construire le début nos deux grosses requetes
-					$strInsertValMesure = "INSERT INTO ValeurMesure (Mesure_idMesure, valeur, libval_idlibval) VALUES "; 
-					$strInsertMesure = "INSERT INTO Mesure(date, idMesure, capteur_idcapteur) VALUES ";
+					$strInsertValMesure = "INSERT INTO valeurmesure (Mesure_idMesure, valeur, libval_idlibval) VALUES "; 
+					$strInsertMesure = "INSERT INTO mesure(date, idMesure, capteur_idcapteur) VALUES ";
 					
 					
-					// Recuperation de l'association libelléVal - idLibval - idtypeCapteur pour une piece donnée
+					// Recuperation de l'association libelléVal - idLibval - idCapteur pour une piece donnée
 					$resultats=$connection->query("
-									SELECT libelle, idLibVal, Capteur.idCapteur FROM Capteur, Localiser, LibVal
+									SELECT libelle, idLibVal, capteur.idCapteur FROM capteur, localiser, libval
 									WHERE Piece_idPiece = $idPiece
-									AND Capteur.idCapteur = Localiser.Capteur_idCapteur
-									AND Capteur.TypeCapteur_idTypeCapteur = LibVal.TypeCapteur_idTypeCapteur
-									ORDER BY Capteur.idCapteur;"
+									AND capteur.idCapteur = localiser.Capteur_idCapteur
+									AND capteur.TypeCapteur_idTypeCapteur = libval.TypeCapteur_idTypeCapteur
+									ORDER BY capteur.idCapteur;"
 									);
 					$resultats->setFetchMode(PDO::FETCH_OBJ);
 					
@@ -227,7 +228,7 @@ if (!isset($_POST['idpiece']))
 						$readyForParsing = false;
 						
 						// on va chercher le nom de la piece pour une erreur plus complete
-						$resNom=$connection->query("SELECT nom as nomPiece FROM Piece WHERE idPiece = $idPiece"); 
+						$resNom=$connection->query("SELECT nom as nomPiece FROM piece WHERE idPiece = $idPiece"); 
 						$resNom->setFetchMode(PDO::FETCH_OBJ);
 						$resultNom = $resNom->fetch();
 						$nomDeLaPiece = $resultNom->nomPiece;
@@ -327,8 +328,8 @@ if (!isset($_POST['idpiece']))
 										//echo "Requete #" . $numLigneCourante/25 ." executee en " . $page_load_time . " sec<br>";
 										$sommeReq += $page_load_time;
 										$nbReq++;
-									$strInsertValMesure = "INSERT INTO ValeurMesure (Mesure_idMesure, valeur, libval_idlibval) VALUES ";
-									$strInsertMesure = "INSERT INTO Mesure(date, idMesure, capteur_idcapteur) VALUES ";
+									$strInsertValMesure = "INSERT INTO valeurmesure (Mesure_idMesure, valeur, libval_idlibval) VALUES ";
+									$strInsertMesure = "INSERT INTO mesure(date, idMesure, capteur_idcapteur) VALUES ";
 									$cptLignesDansRequete = 0;
 							}
 							$cptLignesDansRequete++;
@@ -343,7 +344,7 @@ if (!isset($_POST['idpiece']))
 							<script>
 								document.getElementById("avancement").style.width = "' . $avancement . '%";
 							</script>';
-							ob_flush();
+							//ob_flush();
 							flush();
 						}
 					}

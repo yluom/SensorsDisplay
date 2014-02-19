@@ -9,10 +9,10 @@
 
 	$resultats=$connection->query("	SELECT 3*count(valeur) as total
 									FROM valeurmesure, mesure 
-									WHERE valeurmesure.Mesure_idMesure = Mesure.idMesure 
+									WHERE valeurmesure.Mesure_idMesure = mesure.idMesure 
 									AND Capteur_idCapteur = '$idCapteur1' 
 									AND LibVal_idLibVal = '$idLibVal1' 
-									AND Mesure.date BETWEEN '$dateDeb' AND '$dateFin'");
+									AND mesure.date BETWEEN '$dateDeb' AND '$dateFin'");
 									
 									
 	$resultats->setFetchMode(PDO::FETCH_OBJ);

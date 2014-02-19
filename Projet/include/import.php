@@ -77,7 +77,7 @@
 						<select class="form-control" onchange="showPiece(this.value)">
 							<option>Choose :</option>
 						<?php
-							$resultats=$connection->query("SELECT nom FROM Batiment");
+							$resultats=$connection->query("SELECT nom FROM batiment");
 							$resultats->setFetchMode(PDO::FETCH_OBJ);
 							while( $resultat = $resultats->fetch() )
 							{

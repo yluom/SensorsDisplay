@@ -3,7 +3,7 @@
 	
 	$idBatiment = $_GET['idBatiment'];
 	//echo "Je suis le PHP et tu veux que je vire le batiment $idBatiment mais je ne le fait pas car je test.";
-	$resultats=$connection->query("DELETE FROM Batiment WHERE idBatiment = $idBatiment");
+	$resultats=$connection->query("DELETE FROM batiment WHERE idBatiment = $idBatiment");
 	
 	//Traitement des erreurs ---> A REVOIR !!!! (certainement pas -1...)
 	/*if($resultats == -1){

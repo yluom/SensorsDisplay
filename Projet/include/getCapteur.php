@@ -2,10 +2,10 @@
 	include "bdd.php";
 	$idPiece = $_GET['idPiece'];
 	$resultats=$connection->query("	SELECT idCapteur, nomType
-									FROM Capteur, Localiser, TypeCapteur
+									FROM capteur, localiser, typecapteur
 									WHERE Piece_idPiece = $idPiece
-									AND Localiser.Capteur_idCapteur = Capteur.idCapteur
-									AND Capteur.TypeCapteur_idTypeCapteur = TypeCapteur.idTypeCapteur;");
+									AND localiser.Capteur_idCapteur = capteur.idCapteur
+									AND capteur.TypeCapteur_idTypeCapteur = typecapteur.idTypeCapteur;");
 	$resultats->setFetchMode(PDO::FETCH_OBJ);
 	while( $resultat = $resultats->fetch() )
 	{

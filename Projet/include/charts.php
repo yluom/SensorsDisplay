@@ -126,18 +126,18 @@
                // SERIAL CHART
                chart2 = new AmCharts.AmSerialChart();
                chart2.pathToImages = "./amcharts/images/";
-			   chart2.dataDateFormat = "YYYY-MM-DD";
+			   chart2.dataDateFormat = "YYYY-MM-DD HH";
                chart2.dataProvider = chartData;
                chart2.categoryField = "date";
 			   chart2.autoMarginOffset = 20;
                // listen for "dataUpdated" event (fired when chart is inited) and call zoomChart method when it happens
-               chart2.addListener("dataUpdated", zoomChart);
+              // chart2.addListener("dataUpdated", zoomChart);
 
                // AXES
                // category
                var categoryAxis = chart2.categoryAxis;
                categoryAxis.parseDates = true; // as our data is date-based, we set parseDates to true
-               categoryAxis.minPeriod = "DD"; // our data is daily, so we set minPeriod to DD
+               categoryAxis.minPeriod = "hh"; // our data is daily, so we set minPeriod to DD
                categoryAxis.minorGridEnabled = true;
                categoryAxis.axisColor = "#DADADA";
 
@@ -211,7 +211,7 @@
                chart2.addLegend(legend);
 
                // WRITE
-               chart2.write("graphdiv");
+               //chart2.write("graphdiv");
 			   
            });
 
@@ -273,9 +273,11 @@ function updaValues(){
 		opt3capt = document.getElementById('optioncapteur3').value;
 		opt3lib = document.getElementById('optionlib3').value;
 		
+		groupBy = document.getElementById('groupBy').value;
+		
 		
 		document.getElementById('graphiques').style.position = 'relative'; document.getElementById('graphiques').style.top = '0px';
-		document.getElementById('chartdiv').innerHTML='<h2><img src="./img/loading.gif" style="margin-right:25px;"/>Please wait...</h2>';
+		
 		document.getElementById('graphdiv').innerHTML='<h2><img src="./img/loading.gif" style="margin-right:25px;"/>Please wait...</h2>';
 		if (window.XMLHttpRequest){	// code for IE7+, Firefox, Chrome, Opera, Safari
 			xmlhttp=new XMLHttpRequest();
@@ -299,18 +301,27 @@ function updaValues(){
 					chart.validateData();
 					//chart.write("chartdiv");
 					
-					chartData = JSON.parse("[" + dataLine + "]"); 	
+					chartData = JSON.parse("[" + dataLine + "]"); 
+					
+					switch(groupBy){
+						case "YEAR": chart2.categoryAxis.minPeriod = "YYYY";
+							break;
+						case "MONTH": chart2.categoryAxis.minPeriod = "MM";	
+							break;
+						case "DAY": chart2.categoryAxis.minPeriod = "DD";	
+							break;
+						case "HOUR": chart2.categoryAxis.minPeriod = "hh";	
+							break;
+						default : chart2.categoryAxis.minPeriod = "DD";
+					}
+									
 					chart2.dataProvider = chartData;
 					chart2.validateData();
-					//chart2.write("graphdiv");
-					
-					
-					
-					
+					chart2.write("graphdiv");	
 				}
 			}
 		}
-		xmlhttp.open("GET","./include/reqChart.php?dateDeb="+dateDeb+"&dateFin="+dateFin+"&idCapteur1="+opt1capt+"&idLibVal1="+opt1lib+"&idCapteur2="+opt2capt+"&idLibVal2="+opt2lib+"&idCapteur3="+opt3capt+"&idLibVal3="+opt3lib,true);
+		xmlhttp.open("GET","./include/reqChart.php?dateDeb="+dateDeb+"&dateFin="+dateFin+"&idCapteur1="+opt1capt+"&idLibVal1="+opt1lib+"&idCapteur2="+opt2capt+"&idLibVal2="+opt2lib+"&idCapteur3="+opt3capt+"&idLibVal3="+opt3lib+"&groupBy="+groupBy,true);
 		xmlhttp.send();
 	}
 </script>
@@ -492,21 +503,13 @@ function updaValues(){
 	function onLine(){
 		$('#slider').resize(); 
 		document.getElementById('parameters').style.display='none'; 
-		document.getElementById('rowBubble').style.position = 'absolute'; 
-		document.getElementById('rowBubble').style.left = '-2000px'; 
-		document.getElementById('rowLine').style.position = 'relative'; 
-		document.getElementById('rowLine').style.left = '0px'; 
 		chart2.write('graphdiv');
 	}
 	
 	function onBubble(){
 		$('#slider').resize(); 
 		document.getElementById('parameters').style.display=''; 
-		document.getElementById('rowLine').style.position = 'absolute'; 
-		document.getElementById('rowLine').style.left = '-2000px'; 
-		document.getElementById('rowBubble').style.position = 'relative'; 
-		document.getElementById('rowBubble').style.left = '0px'; 
-		chart.write('chartdiv');
+		chart.write('graphdiv');
 	}
 </script>
 
@@ -523,7 +526,6 @@ function updaValues(){
 </div><!-- /.row -->
 
 
-<!--Nav tabs -->
 <div class="row" id="graphiques" style="position:absolute; top:-2000px;">
 	<div class="col-lg-12">
 		<h2>Charts</h2>
@@ -533,21 +535,17 @@ function updaValues(){
 			</div>
 			<div class="panel-body">
 				 
-				<ul class="nav nav-tabs">
+				<ul class="nav nav-tabs" id="onglet">
 					<li class="active"><a href="#line" data-toggle="tab" onclick="onLine();">Line</a></li>
 					<li><a href="#bubble" data-toggle="tab" onclick="onBubble();">Bubble</a></li>
 				</ul>
 				
-				<div id="rowLine"><div id="graphdiv" style="width: auto; height: 200px;"></div></div>
-				
-				<div id="rowBubble" style="position: absolute; left: -2000px;"><div id="chartdiv" style="width: auto; height: 200px;"></div></div>
-				
-				
-				
+				<div id="graphdiv" style="width: auto; height: 350px;"></div>
 			</div>
 		</div>
 	</div>
 </div>
+
 
 <!-- Paramétrage des trois variables -->
 <div class="row">
@@ -563,7 +561,7 @@ function updaValues(){
 					<select class="form-control" onchange="showPiece(this.value, 1)">
 						<option>Choose :</option>
 					<?php
-						$resultats=$connection->query("SELECT nom FROM Batiment");
+						$resultats=$connection->query("SELECT nom FROM batiment");
 						$resultats->setFetchMode(PDO::FETCH_OBJ);
 						while( $resultat = $resultats->fetch() )
 						{
@@ -606,7 +604,7 @@ function updaValues(){
 					<select class="form-control" onchange="showPiece(this.value, 2)">
 						<option>Choose :</option>
 					<?php
-						$resultats=$connection->query("SELECT nom FROM Batiment");
+						$resultats=$connection->query("SELECT nom FROM batiment");
 						$resultats->setFetchMode(PDO::FETCH_OBJ);
 						while( $resultat = $resultats->fetch() )
 						{
@@ -649,7 +647,7 @@ function updaValues(){
 					<select class="form-control" onchange="showPiece(this.value, 3)">
 						<option>Choose :</option>
 					<?php
-						$resultats=$connection->query("SELECT nom FROM Batiment");
+						$resultats=$connection->query("SELECT nom FROM batiment");
 						$resultats->setFetchMode(PDO::FETCH_OBJ);
 						while( $resultat = $resultats->fetch() )
 						{
@@ -689,7 +687,20 @@ function updaValues(){
 				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Date range</h3>
 			</div>
 			<div class="panel-body">
-				<div id="slider"></div>
+				<div class="form-group">
+					<div id="slider"></div>
+				</div>
+				<div class="form-group" style="width: 150px;">
+					<label>Selects Group by</label>
+					<select class="form-control" id="groupBy">
+						<option value='HOUR'>Hour</option>
+						<option value='DAY'>Day</option>
+						<option value='WEEK'>Week</option>
+						<option value='MONTH'>Month</option>
+						<option value='YEAR'>Year</option>
+					</select>
+				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -735,7 +746,7 @@ function updaValues(){
 			</div>
 			 <div class="panel-body">
 				Nombre de donnees = <b><span id="nbrData">0</span></b> <br><br><br>
-				<button class="btn btn-success" style="float: right;" onClick="updaValues(); chart2.write('graphdiv'); chart.write('chartdiv');">Submit</button>
+				<button class="btn btn-success" style="float: right;" onClick="updaValues(); ">Submit</button>
 			</div>
 		</div>
 	</div>
