@@ -12,11 +12,11 @@
 										if (nbErrors == 1)
 											document.getElementById('nbErrors').innerHTML = nbErrors + " Error";
 										else
-											document.getElementById('nbErrors').innerHTML = nbErrors + " Error(s)";
+											document.getElementById('nbErrors').innerHTML = nbErrors + " Errors/Warnings";
 										document.getElementById('errors').style.visibility = "visible";
 									}
 								}, 700);
-	}
+	}i
 </script>
 
 
@@ -79,7 +79,7 @@
 
 <?php
 
-function addError ($str)
+function addError ($str) // TODO Discerner erreurs/warnings
 {
 	echo '<script>nbErrors++;document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "<div class=\"alert alert-dismissable alert-danger\">' . $str . '</div>";</script>';
 }
@@ -89,7 +89,7 @@ $timestartTotal=microtime(true);
 ini_set('display_errors', 1); 
 error_reporting(E_ALL); 
 
-$readyForParsing = false; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
+$readyForParsing = true; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
 
 // S'il manque des params 
 if (!isset($_POST['idpiece']))
@@ -120,6 +120,7 @@ if (!isset($_POST['idpiece']))
 
 	date_default_timezone_set('Europe/Paris');
 
+
 	// On va laisser le temps (999s) à php de turbiner son fichier
 	ini_set('max_execution_time', 999);
 
@@ -131,11 +132,11 @@ if (!isset($_POST['idpiece']))
 	$sommeReq = 0; // somme des temps de l'execution de chaque requete
 	$nbReq = 0; // nombre de requetes executées
 
-	$cptDoublon = 0;	//Compte le nombre de mesures qui existent déjà dans la BDD
+	$cptDoublon = 0;	//Compte le nombre de mesures qui existent déjà dans la BDD ( à cette date )
 
 	if (!$fp = fopen($file,"r")) {
 		addError( "Error: Echec de l'ouverture du fichier");
-		exit;
+		$readyForParsing = false;
 	} else // Fichier ouvert avec succès 
 	{ 
 		// on veut le nombre de lignes, donc on doit malheureusement (re-)lire tout le fichier
@@ -149,12 +150,12 @@ if (!isset($_POST['idpiece']))
 		} else // S'il y a au moins 2 lignes, on parse le fichier
 		{ 
 			include "bdd.php"; // Connexion à la bdd
-			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd  
+			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
 			$resultats=$connection->query("
 						SELECT date
 						FROM mesure, capteur, localiser
 						WHERE capteur.idCapteur = localiser.Capteur_idCapteur
-						AND localiser.Piece_idPiece = ".$idPiece."
+						AND localiser.Piece_idPiece = ".$idPiece." 
 						GROUP BY DATE
 					");
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
@@ -172,8 +173,8 @@ if (!isset($_POST['idpiece']))
 			$resultats=$connection->query("SELECT max(idMesure) AS maximum FROM mesure"); 
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
 			$result = $resultats->fetch();
-			$idMesureCourant = $result->maximum; // On recupère le maximum, qui nous servira à remplir la table Mesure
-			if(empty($idMesureCourant)) // Concrètement, si idMesureCourant est vide, cela signifie que la table Mesure est vide
+			$idMesureCourant = $result->maximum; // On recupère le maximum, qui nous servira à remplir la table mesure
+			if(empty($idMesureCourant)) // Concrètement, si idMesureCourant est vide, cela signifie que la table mesure est vide
 				$idMesureCourant = 1; // on le met donc à 1
 			else
 				$idMesureCourant++; // Sinon on incrémente, pour stoquer la prochaine mesure
@@ -202,60 +203,57 @@ if (!isset($_POST['idpiece']))
 					$tabLibelleValeurs = array_filter($tabLibelleValeurs); // Enlève les valeurs vides du tableau ('' et '0')
 					$tabLibelleValeurs = array_values($tabLibelleValeurs); // Remet à jour les clés(index) du tableau
 					//var_dump($tabLibelleValeurs); // Debug: affichage du tableau
-
 					
-					$i = 0; // On init i à 0
-
 					// On commence à construire le début nos deux grosses requetes
 					$strInsertValMesure = "INSERT INTO valeurmesure (Mesure_idMesure, valeur, libval_idlibval) VALUES "; 
 					$strInsertMesure = "INSERT INTO mesure(date, idMesure, capteur_idcapteur) VALUES ";
+
+					$i = 0; // On init i à 0
 					
+					foreach ($tabLibelleValeurs as &$nomCaptEtLib) { // pour chaque entete de colonne
 					
-					// Recuperation de l'association libelléVal - idLibval - idCapteur pour une piece donnée
-					$resultats=$connection->query("
-									SELECT libelle, idLibVal, capteur.idCapteur FROM capteur, localiser, libval
-									WHERE Piece_idPiece = $idPiece
-									AND capteur.idCapteur = localiser.Capteur_idCapteur
-									AND capteur.TypeCapteur_idTypeCapteur = libval.TypeCapteur_idTypeCapteur
-									ORDER BY capteur.idCapteur;"
-									);
-					$resultats->setFetchMode(PDO::FETCH_OBJ);
-					
-					$readyForParsing = true; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
-					
-					if ($resultats->rowCount() == 0) // Si la requete renvoi un resultat vide: pas de capteurs dans cette piece ! (et donc pas de libellés à chercher)
-					{
-						$readyForParsing = false;
+						$nomCaptEtLibArray = explode("/", $nomCaptEtLib); // On separe en 2 le nomCapteur et libelleVal
 						
-						// on va chercher le nom de la piece pour une erreur plus complete
-						$resNom=$connection->query("SELECT nom as nomPiece FROM piece WHERE idPiece = $idPiece"); 
-						$resNom->setFetchMode(PDO::FETCH_OBJ);
-						$resultNom = $resNom->fetch();
-						$nomDeLaPiece = $resultNom->nomPiece;
+						if(count($nomCaptEtLibArray) != 2) // dafuq ? Capteur/libelle
+						{
+							addError("Warning: l'entete de colonne $nomCaptEtLib est mal formée !");
+						} else {
 						
-						$strErreur = "Error: La base de données de ne contient aucun capteurs dans la piece selectionnée : ".$nomDeLaPiece ." (idpiece= ".$idPiece.") ! Veuillez selectionner une autre piece.";
-						addError($strErreur);
-						$resNom->closeCursor();
-					} else // La piece contient des capteurs 
-					{ 
-						// On verifie que les libellés de la bdd existent bien dans le fichier
-						while( $resultat = $resultats->fetch())
-						{	
-							$indice = array_search($resultat->libelle, $tabLibelleValeurs); // Retourne d'indice si le libelle existe dans le fichier
-							if($indice !== FALSE) // Il a trouvé un indice
+							$requete2ouf = "
+									SELECT  idCapteur, idLibVal
+									FROM capteur, libval, typecapteur
+									WHERE capteur.TypeCapteur_idTypeCapteur = libval.TypeCapteur_idTypeCapteur
+									AND nomCapteur = '$nomCaptEtLibArray[0]'
+									AND libelle = '$nomCaptEtLibArray[1]';
+									";
+							//echo "<br> Req: <br> ". $requete2ouf;
+	
+							$resultats=$connection->query($requete2ouf);
+							$resultats->setFetchMode(PDO::FETCH_OBJ);
+							
+							if($resultats->rowCount() == 0)
 							{
+								addError("Warning: Dans la bdd, il n'existe aucune correspondance entre le capteur $nomCaptEtLibArray[0] et le libelle $nomCaptEtLibArray[1] !");
+							} else {
+								$resultat = $resultats->fetch();
+								$indice = array_search($nomCaptEtLib, $tabLibelleValeurs); // Retourne d'indice si le libelle existe dans le fichier
+
+								// on stoque l'association indexDansLeFichier/idLibVal/idCapteur
 								$tabIndiceColonne[$i][0] = $indice;
 								$tabIndiceColonne[$i][1] = $resultat->idLibVal;
 								$tabIndiceColonne[$i][2] = $resultat->idCapteur;
 								$i += 1;
-							} else { // indice == FALSE
-								addError( "Warning: Variable ". $resultat->libelle . " de la bdd entre n'existe pas dans le ficher !");
 							}
+							$resultats->closeCursor();
 						}
 					}
+
+					// TRIAGE du tableau en fonction de l'idCapteur (necessaire pour minimiser les requetes d'insertion dans mesure)
+					foreach ($tabIndiceColonne as $array) {
+						$idCapt[] = $array[2];
+					}
+					array_multisort($idCapt,SORT_NUMERIC,$tabIndiceColonne);
 					
-					
-					$resultats->closeCursor();
 				} else { // Toutes les lignes sauf la premiere
 					if($readyForParsing) {
 						$tabValeurs = explode(' ', $ligne); // On split sur les espaces
@@ -299,7 +297,7 @@ if (!isset($_POST['idpiece']))
 							$total = count($tabIndiceColonne);
 							for ( $i = 0; $i < $total; $i++) 
 							{
-								if($tabIndiceColonne[$i][2] != $idCapteurCourant) // Si l'on "change" de capteur (et donc de type capteur), on créée une nouvelle mesure dans la table Mesure (donc ajout d'une ligne dans la string de requete d'insertion dans mesure !
+								if($tabIndiceColonne[$i][2] != $idCapteurCourant) // Si l'on "change" de capteur (et donc de type capteur), on créée une nouvelle mesure dans la table mesure (donc ajout d'une ligne dans la string de requete d'insertion dans mesure !
 								{
 									$idCapteurCourant = $tabIndiceColonne[$i][2];
 									$strInsertMesure = $strInsertMesure . "('$dateFormat', $idMesureCourant, $idCapteurCourant),";
@@ -336,7 +334,10 @@ if (!isset($_POST['idpiece']))
 							$cptLignesImportees++;
 						}
 						// Affiche le pourcentage d'avancement (tout les 1%)
-						if($numLigneCourante % intval($nbTotalLigne/1000) == 0)
+						$div = intval($nbTotalLigne/1000);
+						if ($div == 0)
+							$div = 1;
+						if($numLigneCourante % $div == 0)
 						{
 							$avancement = $numLigneCourante/$nbTotalLigne*100;
 							$avancement = number_format($avancement, 2); // On garde 2 décimales 
@@ -344,7 +345,7 @@ if (!isset($_POST['idpiece']))
 							<script>
 								document.getElementById("avancement").style.width = "' . $avancement . '%";
 							</script>';
-							//ob_flush();
+							ob_flush();
 							flush();
 						}
 					}
@@ -354,6 +355,8 @@ if (!isset($_POST['idpiece']))
 			if($cptDoublon > 0)
 				addError( "Warning: Nombre de lignes non importées (doublon) : $cptDoublon (sur $nbTotalLigne lignes)");
 			
+			
+			echo $strInsertValMesure;
 			//Affichage du chrono
 			$timeendTotal=microtime(true);
 			$timeTotal=$timeendTotal-$timestartTotal;
@@ -365,6 +368,7 @@ if (!isset($_POST['idpiece']))
 		fclose($fp); // On ferme le fichier
 	}
 }
+$nbTotalLigne--;
 	if($readyForParsing) // Si le fichier à été parsé
 		echo "<script>finParser($page_load_timeTotal,$cptLignesImportees,$nbTotalLigne);</script>";
 	else // s'il n'as pas été parsé pour quelque raison que ce soit
