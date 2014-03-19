@@ -84,6 +84,22 @@ function addError ($str) // TODO Discerner erreurs/warnings
 	echo '<script>nbErrors++;document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "<div class=\"alert alert-dismissable alert-danger\">' . $str . '</div>";</script>';
 }
 
+function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
+{
+	for ($i = 0; $i < count($datesMesuresEffectuees); $i++)
+	{
+		if($datesMesuresEffectuees[$i][0] == $date)
+		{
+			if(in_array($idCapteur, $datesMesuresEffectuees[$i][1]))
+			{
+				return true;
+			}
+		
+		}
+	
+	}
+	return false;
+}
 
 $timestartTotal=microtime(true);
 ini_set('display_errors', 1); 
@@ -92,10 +108,7 @@ error_reporting(E_ALL);
 $readyForParsing = true; // Variable utilisée pour NE PAS parser le fichier, si aucun libellé n'est trouvé dans la bdd
 
 // S'il manque des params 
-if (!isset($_POST['idpiece']))
-{
-	addError("Error: Paramètre optionpiece manquant !!");
-} else if (!isset($_FILES['data'])) {
+if (!isset($_FILES['data'])) {
 	addError("Error: Paramètre data manquant !!");
 } else if ($_FILES['data']['error']) {  // S'il y a eu une erreur lors du transfert du fichier
 	switch ($_FILES['data']['error']) 
@@ -125,7 +138,7 @@ if (!isset($_POST['idpiece']))
 	ini_set('max_execution_time', 999);
 
 	// On récupère l'id de la piece ainsi que le fichier
-	$idPiece = $_POST['idpiece']; 
+	//$idPiece = $_POST['idpiece']; 
 	$file = $_FILES['data']['tmp_name'];
 	
 	// variables utilisées pour les stats (timing)
@@ -149,22 +162,55 @@ if (!isset($_POST['idpiece']))
 			addError( "Error: Le fichier importé contient seulement ". $nbTotalLigne . " lignes,<br> veuillez importer un fichier qui fais minimum 2 lignes (1 ligne pour les libelles de variables, une ligne pour les valeurs des variables.");
 		} else // S'il y a au moins 2 lignes, on parse le fichier
 		{ 
+		
+			// Recherche des dates debut et fin du fichier
+			$leFichierEnEntier = file($file); // file($file);
+			$premiere_ligne = $leFichierEnEntier[1];
+			$derniere_ligne = $leFichierEnEntier[count($leFichierEnEntier)-1];
+			$backcheck = 2;
+			while(empty($derniere_ligne))
+			{
+				$derniere_ligne = $leFichierEnEntier[count($leFichierEnEntier)-$backcheck];
+				$backcheck++;
+			}
+
+			
+			$premiere_date = substr($premiere_ligne, 0, 17);
+			$derniere_date = substr($derniere_ligne, 0, 17);
+
 			include "bdd.php"; // Connexion à la bdd
 			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
 			$resultats=$connection->query("
 						SELECT date
-						FROM mesure, capteur, localiser
-						WHERE capteur.idCapteur = localiser.Capteur_idCapteur
-						AND localiser.Piece_idPiece = ".$idPiece." 
-						GROUP BY DATE
+						FROM mesure
+						WHERE date BETWEEN '$premiere_date' AND '$derniere_date'
+						ORDER BY date;
 					");
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
 			$indexDates = 0;
 			$datesMesuresEffectuees = null;
 			while( $resultat = $resultats->fetch())
 			{
-			    $datesMesuresEffectuees[$indexDates] = $resultat->date;
-			    $indexDates++;
+				$datesMesuresEffectuees[$indexDates][0] = $resultat->date;
+				$dateTemp = $resultat->date;
+				
+				$resulBis=$connection->query("
+							SELECT Capteur_idCapteur
+							FROM mesure
+							WHERE date = '$dateTemp'
+					");
+					
+				$indexIdCapteur = 0;
+				unset($tableauIdCapteur);
+				$resulBis->setFetchMode(PDO::FETCH_OBJ);
+				while( $resultatBis = $resulBis->fetch())
+				{
+					$tableauIdCapteur[$indexIdCapteur] = $resultatBis->Capteur_idCapteur;
+					$indexIdCapteur++;
+				}
+				
+				$datesMesuresEffectuees[$indexDates][1] = $tableauIdCapteur;
+				$indexDates++;
 			}
 			
 			
@@ -288,22 +334,25 @@ if (!isset($_POST['idpiece']))
 							$dateFormat = $datetime->format('Y-m-d H:i:s');
 						}
 						
-						if( !$dateErronee && !is_null($datesMesuresEffectuees) && in_array($dateFormat, $datesMesuresEffectuees) == TRUE) 
-						{
-							$cptDoublon++;
-						} else if (!$dateErronee) { // pas d'erreur sur la date & mesure inexistante dans la bdd: on rempli !
+						if (!$dateErronee) { // pas d'erreur sur la date 
 							// ----- Bloc Remplissage de la bdd !
 							$idCapteurCourant = -10;
 							$total = count($tabIndiceColonne);
 							for ( $i = 0; $i < $total; $i++) 
 							{
-								if($tabIndiceColonne[$i][2] != $idCapteurCourant) // Si l'on "change" de capteur (et donc de type capteur), on créée une nouvelle mesure dans la table mesure (donc ajout d'une ligne dans la string de requete d'insertion dans mesure !
+								if(checkSiMesureEstUnDoublon($dateFormat, $tabIndiceColonne[$i][2], $datesMesuresEffectuees))
 								{
-									$idCapteurCourant = $tabIndiceColonne[$i][2];
-									$strInsertMesure = $strInsertMesure . "('$dateFormat', $idMesureCourant, $idCapteurCourant),";
-									$idMesureCourant++;
+									$cptDoublon++;
+								} else {
+									if($tabIndiceColonne[$i][2] != $idCapteurCourant) // Si l'on "change" de capteur (et donc de type capteur), on créée une nouvelle mesure dans la table mesure (donc ajout d'une ligne dans la string de requete d'insertion dans mesure !
+									{
+										$idCapteurCourant = $tabIndiceColonne[$i][2];
+										$strInsertMesure = $strInsertMesure . "('$dateFormat', $idMesureCourant, $idCapteurCourant),";
+										$idMesureCourant++;
+									}
+									$strInsertValMesure = $strInsertValMesure . "(" .  ($idMesureCourant - 1) . "," . $tabValeurs[$tabIndiceColonne[$i][0]] . "," . $tabIndiceColonne[$i][1] . "),";
+
 								}
-								$strInsertValMesure = $strInsertValMesure . "(" .  ($idMesureCourant - 1) . "," . $tabValeurs[$tabIndiceColonne[$i][0]] . "," . $tabIndiceColonne[$i][1] . "),";
 							}
 							
 							if($cptLignesDansRequete > 25 || $numLigneCourante == $nbTotalLigne)
@@ -330,8 +379,8 @@ if (!isset($_POST['idpiece']))
 									$strInsertMesure = "INSERT INTO mesure(date, idMesure, capteur_idcapteur) VALUES ";
 									$cptLignesDansRequete = 0;
 							}
-							$cptLignesDansRequete++;
-							$cptLignesImportees++;
+ 							$cptLignesDansRequete++;
+ 							$cptLignesImportees++;
 						}
 						// Affiche le pourcentage d'avancement (tout les 1%)
 						$div = intval($nbTotalLigne/1000);
@@ -345,7 +394,7 @@ if (!isset($_POST['idpiece']))
 							<script>
 								document.getElementById("avancement").style.width = "' . $avancement . '%";
 							</script>';
-							ob_flush();
+							//ob_flush();
 							flush();
 						}
 					}
@@ -356,7 +405,7 @@ if (!isset($_POST['idpiece']))
 				addError( "Warning: Nombre de lignes non importées (doublon) : $cptDoublon (sur $nbTotalLigne lignes)");
 			
 			
-			echo $strInsertValMesure;
+			//echo $strInsertValMesure;
 			//Affichage du chrono
 			$timeendTotal=microtime(true);
 			$timeTotal=$timeendTotal-$timestartTotal;
