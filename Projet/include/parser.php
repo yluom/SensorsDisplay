@@ -16,7 +16,7 @@
 										document.getElementById('errors').style.visibility = "visible";
 									}
 								}, 700);
-	}i
+	}
 </script>
 
 
@@ -79,6 +79,10 @@
 
 <?php
 
+$nbCheck= 0;
+$sommeIteration = 0;
+
+
 function addError ($str) // TODO Discerner erreurs/warnings
 {
 	echo '<script>nbErrors++;document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "<div class=\"alert alert-dismissable alert-danger\">' . $str . '</div>";</script>';
@@ -86,8 +90,13 @@ function addError ($str) // TODO Discerner erreurs/warnings
 
 function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
 {
+	global $cptIteration;
+	$cptIteration = 0;
+	echo "Appel du check<br>";
 	for ($i = 0; $i < count($datesMesuresEffectuees); $i++)
 	{
+		$cptIteration++;
+		
 		if($datesMesuresEffectuees[$i][0] == $date)
 		{
 			if(in_array($idCapteur, $datesMesuresEffectuees[$i][1]))
@@ -96,8 +105,9 @@ function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
 			}
 		
 		}
-	
+
 	}
+	//echo "SORTIE CHECK FALSE<br>";
 	return false;
 }
 
@@ -181,14 +191,14 @@ if (!isset($_FILES['data'])) {
 			include "bdd.php"; // Connexion à la bdd
 			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
 			$resultats=$connection->query("
-						SELECT date
-						FROM mesure
-						WHERE date BETWEEN '$premiere_date' AND '$derniere_date'
-						ORDER BY date;
-					");
+							SELECT date
+							FROM mesure
+							WHERE date BETWEEN '$premiere_date' AND '$derniere_date'
+							GROUP BY date;
+							");
 			$resultats->setFetchMode(PDO::FETCH_OBJ);
 			$indexDates = 0;
-			$datesMesuresEffectuees = null;
+			unset($datesMesuresEffectuees);
 			while( $resultat = $resultats->fetch())
 			{
 				$datesMesuresEffectuees[$indexDates][0] = $resultat->date;
@@ -212,7 +222,6 @@ if (!isset($_FILES['data'])) {
 				$datesMesuresEffectuees[$indexDates][1] = $tableauIdCapteur;
 				$indexDates++;
 			}
-			
 			
 			// ----- Bloc recherche idMesureMax
 			// on va chercher l'idmesure maximal, afin de rentrer les prochaines mesures avec un bon idmesure
@@ -340,7 +349,7 @@ if (!isset($_FILES['data'])) {
 							$total = count($tabIndiceColonne);
 							for ( $i = 0; $i < $total; $i++) 
 							{
-								if(checkSiMesureEstUnDoublon($dateFormat, $tabIndiceColonne[$i][2], $datesMesuresEffectuees))
+								if(isset($datesMesuresEffectuees) && checkSiMesureEstUnDoublon($dateFormat, $tabIndiceColonne[$i][2], $datesMesuresEffectuees))
 								{
 									$cptDoublon++;
 								} else {
@@ -351,11 +360,15 @@ if (!isset($_FILES['data'])) {
 										$idMesureCourant++;
 									}
 									$strInsertValMesure = $strInsertValMesure . "(" .  ($idMesureCourant - 1) . "," . $tabValeurs[$tabIndiceColonne[$i][0]] . "," . $tabIndiceColonne[$i][1] . "),";
-
+									$cptLignesDansRequete++; // TODO
 								}
+/*$sommeIteration += $cptIteration;
+$nbCheck++;
+$moyit = $sommeIteration/$nbCheck;
+echo "Moyenne d'ité : $moyit ($nbCheck checks)<br>";*/
 							}
 							
-							if($cptLignesDansRequete > 25 || $numLigneCourante == $nbTotalLigne)
+							if($cptLignesDansRequete > 800 || $numLigneCourante == $nbTotalLigne)
 							{
 									// On ferme la requete avec un "" si on est à la fin du fichier ou si on à traité les 25 lignes (par defaut) 
 									$strInsertValMesure[strlen($strInsertValMesure)-1] = ";";
@@ -379,7 +392,7 @@ if (!isset($_FILES['data'])) {
 									$strInsertMesure = "INSERT INTO mesure(date, idMesure, capteur_idcapteur) VALUES ";
 									$cptLignesDansRequete = 0;
 							}
- 							$cptLignesDansRequete++;
+
  							$cptLignesImportees++;
 						}
 						// Affiche le pourcentage d'avancement (tout les 1%)
@@ -390,8 +403,7 @@ if (!isset($_FILES['data'])) {
 						{
 							$avancement = $numLigneCourante/$nbTotalLigne*100;
 							$avancement = number_format($avancement, 2); // On garde 2 décimales 
-							echo '
-							<script>
+							echo '<script>
 								document.getElementById("avancement").style.width = "' . $avancement . '%";
 							</script>';
 							//ob_flush();
@@ -417,7 +429,6 @@ if (!isset($_FILES['data'])) {
 		fclose($fp); // On ferme le fichier
 	}
 }
-$nbTotalLigne--;
 	if($readyForParsing) // Si le fichier à été parsé
 		echo "<script>finParser($page_load_timeTotal,$cptLignesImportees,$nbTotalLigne);</script>";
 	else // s'il n'as pas été parsé pour quelque raison que ce soit
