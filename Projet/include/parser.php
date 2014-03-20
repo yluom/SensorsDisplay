@@ -78,35 +78,43 @@
 </div>
 
 <?php
-
+include "bdd.php";
 $nbCheck= 0;
 $sommeIteration = 0;
-
+global $cptCheck;
+$cptCheck = 0;
 
 function addError ($str) // TODO Discerner erreurs/warnings
 {
 	echo '<script>nbErrors++;document.getElementById("erreurs").innerHTML = document.getElementById("erreurs").innerHTML + "<div class=\"alert alert-dismissable alert-danger\">' . $str . '</div>";</script>';
 }
 
-function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
+function checkSiMesureEstUnDoublon ($date, $idCapteur, $connection)
 {
-	global $cptIteration;
+	/*global $cptIteration;
 	$cptIteration = 0;
-	for ($i = 0; $i < count($datesMesuresEffectuees); $i++)
+	$count = count($datesMesuresEffectuees);
+	for ($i = 0; $i < $count; $i++)
 	{
 		$cptIteration++;
-		
-		if($datesMesuresEffectuees[$i][0] == $date)
-		{
-			if(in_array($idCapteur, $datesMesuresEffectuees[$i][1]))
-			{
-				return true;
-			}
-		
-		}
-
+		if($datesMesuresEffectuees[$i][0] == $date && in_array($idCapteur, $datesMesuresEffectuees[$i][1]))
+			return true;
 	}
-	return false;
+	return false;*/
+	$resultats=$connection->query("
+							SELECT idMesure
+							FROM mesure
+							WHERE date = '$date'
+							AND Capteur_idCapteur = $idCapteur;
+							");
+	$resultats->setFetchMode(PDO::FETCH_OBJ);
+
+	if ($resultats->fetch() == false)
+	{
+		return false;
+	} else {
+		return true;
+	}
 }
 
 $timestartTotal=microtime(true);
@@ -195,7 +203,7 @@ if (!isset($_FILES['data'])) {
 			
 			include "bdd.php"; // Connexion à la bdd
 			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
-			$resultats=$connection->query("
+			/*$resultats=$connection->query("
 							SELECT date
 							FROM mesure
 							WHERE date BETWEEN '$premiere_date' AND '$derniere_date'
@@ -226,7 +234,7 @@ if (!isset($_FILES['data'])) {
 				
 				$datesMesuresEffectuees[$indexDates][1] = $tableauIdCapteur;
 				$indexDates++;
-			}
+			}*/
 			
 			// ----- Bloc recherche idMesureMax
 			// on va chercher l'idmesure maximal, afin de rentrer les prochaines mesures avec un bon idmesure
@@ -354,8 +362,8 @@ if (!isset($_FILES['data'])) {
 							$total = count($tabIndiceColonne);
 							for ( $i = 0; $i < $total; $i++) 
 							{
-								if(isset($datesMesuresEffectuees) && checkSiMesureEstUnDoublon($dateFormat, $tabIndiceColonne[$i][2], $datesMesuresEffectuees))
-								{
+								if(checkSiMesureEstUnDoublon($dateFormat, $tabIndiceColonne[$i][2], $connection))
+								{			
 									$cptDoublon++;
 								} else {
 									if($tabIndiceColonne[$i][2] != $idCapteurCourant) // Si l'on "change" de capteur (et donc de type capteur), on créée une nouvelle mesure dans la table mesure (donc ajout d'une ligne dans la string de requete d'insertion dans mesure !
@@ -382,9 +390,10 @@ echo "Moyenne d'ité : $moyit ($nbCheck checks)<br>";*/
 									//echo " Req de mesure = $strInsertMesure <br>";
 									//echo " Req de valmesure = $strInsertValMesure <br>";
 										$timestart=microtime(true);
-									$connection->query($strInsertMesure) or die(print_r($connection->errorInfo()));
-									$connection->query($strInsertValMesure) or die(print_r($connection->errorInfo()));
-									
+									if($strInsertMesure[strlen($strInsertMesure)-2] == ')'){ 
+										$connection->query($strInsertMesure) or die(print_r($connection->errorInfo()));
+										$connection->query($strInsertValMesure) or die(print_r($connection->errorInfo()));
+									}
 										//Affichage du chrono
 										$timeend=microtime(true);
 										$time=$timeend-$timestart;
