@@ -92,7 +92,6 @@ function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
 {
 	global $cptIteration;
 	$cptIteration = 0;
-	echo "Appel du check<br>";
 	for ($i = 0; $i < count($datesMesuresEffectuees); $i++)
 	{
 		$cptIteration++;
@@ -107,7 +106,6 @@ function checkSiMesureEstUnDoublon ($date, $idCapteur, $datesMesuresEffectuees)
 		}
 
 	}
-	//echo "SORTIE CHECK FALSE<br>";
 	return false;
 }
 
@@ -187,7 +185,14 @@ if (!isset($_FILES['data'])) {
 			
 			$premiere_date = substr($premiere_ligne, 0, 17);
 			$derniere_date = substr($derniere_ligne, 0, 17);
-
+			
+			$datetimeBegin = date_create_from_format('d/m/y H:i:s', $premiere_date); // crée un datetime pour l'entrer dans la bdd
+			$datetimeEnd = date_create_from_format('d/m/y H:i:s', $derniere_date); // crée un datetime pour l'entrer dans la bdd
+			
+			
+			$premiere_date = $datetimeBegin->format('Y-m-d H:i:s');
+			$derniere_date = $datetimeEnd->format('Y-m-d H:i:s');
+			
 			include "bdd.php"; // Connexion à la bdd
 			// ----- Bloc recherche des dates des mesures déjà entrées dans la bdd TODO TODO TODO  
 			$resultats=$connection->query("
