@@ -7,7 +7,7 @@
 	$idCapteur1 = $_GET['idCapteur1'];
 	$idLibVal1 = $_GET['idLibVal1'];
 
-	$resultats=$connection->query("	SELECT 3*count(valeur) as total
+	$resultats=$connection->query("	SELECT count(valeur) as total
 									FROM valeurmesure, mesure 
 									WHERE valeurmesure.Mesure_idMesure = mesure.idMesure 
 									AND Capteur_idCapteur = '$idCapteur1' 
@@ -17,6 +17,10 @@
 									
 	$resultats->setFetchMode(PDO::FETCH_OBJ);
 	$res = $resultats->fetch();
-	$count = $res->total;
-	echo $count;
+	$stats = "	Hour : ". ceil(($res->total)/2) ." <br>
+				Day : ". ceil(($res->total)/2/24) ." <br>
+				Week : ". ceil(($res->total)/2/24/7) ." <br>
+				Month : ". ceil(($res->total)/2/24/30) ." <br>
+				Year : ". ceil(($res->total)/2/24/30/12) ;
+	echo $stats;
 ?>

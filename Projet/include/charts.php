@@ -317,7 +317,12 @@ function updaValues(){
 									
 					chart2.dataProvider = chartData;
 					chart2.validateData();
-					chart2.write("graphdiv");	
+					
+					if($("ul#onglet li.active a").attr('href')=='#line'){
+						chart2.write("graphdiv");
+					} else {
+						chart.write("graphdiv");
+					}
 				}
 			}
 		}
@@ -465,10 +470,12 @@ function updaValues(){
 
 <script>
 	function showSubmit(){
-		if($("#optionlib1").css("visibility") == "visible" && $("#optionlib2").css("visibility") == "visible" && $("#optionlib3").css("visibility") == "visible")
+		if($("#optionlib1").css("visibility") == "visible" && $("#optionlib2").css("visibility") == "visible" && $("#optionlib3").css("visibility") == "visible"){
 			document.getElementById('submit').style.display='';
-		else
+			updaStats();
+		} else {
 			document.getElementById('submit').style.display='none';
+		}
 	}
 </script>
 
@@ -489,7 +496,7 @@ function updaValues(){
 		xmlhttp.onreadystatechange=function(){
 			if (xmlhttp.readyState==4 && xmlhttp.status==200){
 				if(xmlhttp.responseText == ""){
-					document.getElementById('nbrData').innerHTML = '0';
+					document.getElementById('nbrData').innerHTML = '';
 				} else {
 					document.getElementById('nbrData').innerHTML = xmlhttp.responseText;
 				}
@@ -557,7 +564,7 @@ function updaValues(){
 			</div>
 			<div class="panel-body">
 				<div class="form-group">
-					<label>Selects Batiment</label>
+					<label>Select Building</label>
 					<select class="form-control" onchange="showPiece(this.value, 1)">
 						<option>Choose :</option>
 					<?php
@@ -572,19 +579,19 @@ function updaValues(){
 					</select>
 				</div>
 				<div class="form-group" id="formPiece1" style="visibility: hidden;">
-					<label>Selects Piece</label>
+					<label>Select Room</label>
 					<select class="form-control" id="optionpiece1" onchange="showCapteur(this.value, 1)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formCapteur1" style="visibility: hidden;" >
-					<label>Selects Capteur</label>
+					<label>Select Sensor</label>
 					<select class="form-control" id="optioncapteur1" onchange="showLib(this.value, 1)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formLib1" style="visibility: hidden;" >
-					<label>Selects Variable</label>
+					<label>Select Variable</label>
 					<select class="form-control" id="optionlib1">
 						<option>Choisir</option>
 					</select>
@@ -600,7 +607,7 @@ function updaValues(){
 			</div>
 			<div class="panel-body">
 				<div class="form-group">
-					<label>Selects Batiment</label>
+					<label>Select Building</label>
 					<select class="form-control" onchange="showPiece(this.value, 2)">
 						<option>Choose :</option>
 					<?php
@@ -615,19 +622,19 @@ function updaValues(){
 					</select>
 				</div>
 				<div class="form-group" id="formPiece2" style="visibility: hidden;">
-					<label>Selects Piece</label>
+					<label>Select Room</label>
 					<select class="form-control" id="optionpiece2" onchange="showCapteur(this.value, 2)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formCapteur2" style="visibility: hidden;" >
-					<label>Selects Capteur</label>
+					<label>Select Sensor</label>
 					<select class="form-control" id="optioncapteur2" onchange="showLib(this.value, 2)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formLib2" style="visibility: hidden;" >
-					<label>Selects Variable</label>
+					<label>Select Variable</label>
 					<select class="form-control" id="optionlib2">
 						<option>Choisir</option>
 					</select>
@@ -643,7 +650,7 @@ function updaValues(){
 			</div>
 			<div class="panel-body">
 				<div class="form-group">
-					<label>Selects Batiment</label>
+					<label>Select Building</label>
 					<select class="form-control" onchange="showPiece(this.value, 3)">
 						<option>Choose :</option>
 					<?php
@@ -658,19 +665,19 @@ function updaValues(){
 					</select>
 				</div>
 				<div class="form-group" id="formPiece3" style="visibility: hidden;">
-					<label>Selects Piece</label>
+					<label>Select Room</label>
 					<select class="form-control" id="optionpiece3" onchange="showCapteur(this.value, 3)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formCapteur3" style="visibility: hidden;" >
-					<label>Selects Capteur</label>
+					<label>Select Sensor</label>
 					<select class="form-control" id="optioncapteur3" onchange="showLib(this.value, 3)">
 						<option>Choisir</option>
 					</select>
 				</div>
 				<div class="form-group" id="formLib3" style="visibility: hidden;" >
-					<label>Selects Variable</label>
+					<label>Select Variable</label>
 					<select class="form-control" id="optionlib3">
 						<option>Choisir</option>
 					</select>
@@ -691,7 +698,7 @@ function updaValues(){
 					<div id="slider"></div>
 				</div>
 				<div class="form-group" style="width: 150px;">
-					<label>Selects Group by</label>
+					<label>Select Group by</label>
 					<select class="form-control" id="groupBy">
 						<option value='HOUR'>Hour</option>
 						<option value='DAY'>Day</option>
@@ -716,11 +723,11 @@ function updaValues(){
 			</div>
 			<div class="panel-body">
 				<div class="form-group">
-					<label>Selects Color</label>
+					<label>Select Color</label>
 					<input class="form-control color" onchange="updaColor(this.value)" value="00FFFF">
 				</div>
 				<div class="form-group">
-					<label>Selects Bullet</label>
+					<label>Select Bullet</label>
 					<select class="form-control" onchange="changeBullet(this.value)">
 						<option>none</option>
 						<option>round</option>
@@ -742,10 +749,10 @@ function updaValues(){
 	<div class="col-lg-4" id="submit" style="display:none;">
 		<div class="panel panel-primary">
 			<div class="panel-heading">
-				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Data</h3>
+				<h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Data (approximate)</h3>
 			</div>
 			 <div class="panel-body">
-				Nombre de donnees = <b><span id="nbrData">0</span></b> <br><br><br>
+				<b><span id="nbrData">0</span></b> <br><br><br>
 				<button class="btn btn-success" style="float: right;" onClick="updaValues(); ">Submit</button>
 			</div>
 		</div>
