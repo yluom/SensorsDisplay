@@ -57,7 +57,6 @@
 	<script src="amcharts/exporting/canvg.js" type="text/javascript"></script>        
 	<script src="amcharts/exporting/filesaver.js" type="text/javascript"></script>
 	
-	
 </head>
 
 <body>
